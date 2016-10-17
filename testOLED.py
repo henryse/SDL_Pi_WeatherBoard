@@ -1,4 +1,3 @@
-
 #
 # test scrolling OLED
 #
@@ -17,8 +16,6 @@ display.begin()
 display.clear()
 display.display()
 
-
-for i in range(0,30):
-	Scroll_SSD1306.addLineOLED(display, "Hello there "+str(i))
-	time.sleep(1)
-
+for i in range(0, 30):
+    Scroll_SSD1306.addLineOLED(display, "Hello there " + str(i))
+    time.sleep(1)
