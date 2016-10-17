@@ -59,19 +59,22 @@ class RPi_PWM_Adapter(object):
         if dutycycle < 0.0 or dutycycle > 100.0:
             raise ValueError('Invalid duty cycle value, must be between 0.0 to 100.0 (inclusive).')
         if pin not in self.pwm:
-            raise ValueError('Pin {0} is not configured as a PWM.  Make sure to first call start for the pin.'.format(pin))
+            raise ValueError(
+                'Pin {0} is not configured as a PWM.  Make sure to first call start for the pin.'.format(pin))
         self.pwm[pin].ChangeDutyCycle(dutycycle)
 
     def set_frequency(self, pin, frequency_hz):
         """Set frequency (in Hz) of PWM output on specified pin."""
         if pin not in self.pwm:
-            raise ValueError('Pin {0} is not configured as a PWM.  Make sure to first call start for the pin.'.format(pin))
+            raise ValueError(
+                'Pin {0} is not configured as a PWM.  Make sure to first call start for the pin.'.format(pin))
         self.pwm[pin].ChangeFrequency(frequency_hz)
 
     def stop(self, pin):
         """Stop PWM output on specified pin."""
         if pin not in self.pwm:
-            raise ValueError('Pin {0} is not configured as a PWM.  Make sure to first call start for the pin.'.format(pin))
+            raise ValueError(
+                'Pin {0} is not configured as a PWM.  Make sure to first call start for the pin.'.format(pin))
         self.pwm[pin].stop()
         del self.pwm[pin]
 

@@ -29,8 +29,8 @@ if is_config:
     print "graph_title Temperatur (I2C)"
     print "graph_vlabel °C"
     print "graph_category sensors"
-    #print "graph_scale no"
-    #print "graph_args -A -Y"
+    # print "graph_scale no"
+    # print "graph_args -A -Y"
     print "temperature.label Temperatur (°C)"
 else:
     print "temperature.value %.4f" % temp

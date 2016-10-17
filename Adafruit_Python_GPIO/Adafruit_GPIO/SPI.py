@@ -24,7 +24,6 @@ import time
 
 import Adafruit_GPIO as GPIO
 
-
 MSBFIRST = 0
 LSBFIRST = 1
 
@@ -40,7 +39,7 @@ class SpiDev(object):
         import spidev
         self._device = spidev.SpiDev()
         self._device.open(port, device)
-        self._device.max_speed_hz=max_speed_hz
+        self._device.max_speed_hz = max_speed_hz
         # Default to mode 0.
         self._device.mode = 0
 
@@ -48,7 +47,7 @@ class SpiDev(object):
         """Set the speed of the SPI clock in hertz.  Note that not all speeds
         are supported and a lower speed might be chosen by the hardware.
         """
-        self._device.max_speed_hz=hz
+        self._device.max_speed_hz = hz
 
     def set_mode(self, mode):
         """Set SPI mode which controls clock polarity and phase.  Should be a

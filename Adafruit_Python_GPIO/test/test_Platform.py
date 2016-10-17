@@ -72,4 +72,3 @@ class TestPiRevision(unittest.TestCase):
             handle = mock_open.return_value.__enter__.return_value
             handle.__iter__.return_value = iter(['foobar'])
             self.assertRaises(RuntimeError, Platform.pi_revision)
-

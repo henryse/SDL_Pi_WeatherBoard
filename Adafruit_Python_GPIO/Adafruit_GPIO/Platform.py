@@ -22,8 +22,8 @@ import platform
 import re
 
 # Platform identification constants.
-UNKNOWN          = 0
-RASPBERRY_PI     = 1
+UNKNOWN = 0
+RASPBERRY_PI = 1
 BEAGLEBONE_BLACK = 2
 
 
@@ -45,7 +45,7 @@ def platform_detect():
         return BEAGLEBONE_BLACK
     elif plat.lower().find('armv7l-with-glibc2.4') > -1:
         return BEAGLEBONE_BLACK
-    
+
     # Couldn't figure out the platform, just return unknown.
     return UNKNOWN
 

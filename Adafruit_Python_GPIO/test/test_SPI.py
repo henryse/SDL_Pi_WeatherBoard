@@ -31,10 +31,10 @@ class TestBitBangSPI(unittest.TestCase):
     def test_pin_modes_set_correctly(self):
         gpio = MockGPIO()
         device = SPI.BitBang(gpio, 1, 2, 3, 4)
-        self.assertDictEqual(gpio.pin_mode, { 1: GPIO.OUT,
-                                              2: GPIO.OUT,
-                                              3: GPIO.IN,
-                                              4: GPIO.OUT })
+        self.assertDictEqual(gpio.pin_mode, {1: GPIO.OUT,
+                                             2: GPIO.OUT,
+                                             3: GPIO.IN,
+                                             4: GPIO.OUT})
 
     def test_ss_set_high_after_initialization(self):
         gpio = MockGPIO()
@@ -187,6 +187,6 @@ class TestBitBangSPI(unittest.TestCase):
         # Verify result
         self.assertEqual(result, bytearray([0x1F, 0xF8, 0x1F]))
 
-    #TODO: Test mode 1, 2, 3
+        # TODO: Test mode 1, 2, 3
 
-    #TODO: Test null MOSI, MISO, SS
+        # TODO: Test null MOSI, MISO, SS

@@ -2,8 +2,8 @@
 # Author: Bastien Wirtz <bastien.wirtz@gmail.com>
 
 # Can enable debug output by uncommenting:
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
 
 import Adafruit_BMP.BMP280 as BMP280
 
