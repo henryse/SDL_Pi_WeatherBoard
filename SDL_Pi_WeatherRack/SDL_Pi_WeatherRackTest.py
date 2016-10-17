@@ -25,8 +25,8 @@ import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
 # GPIO Numbering Mode GPIO.BCM
 #
 
-anenometerPin = 6
-rainPin = 12
+anenometerPin = 23
+rainPin = 24
 
 # constants
 
