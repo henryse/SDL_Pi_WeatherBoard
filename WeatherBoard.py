@@ -8,7 +8,9 @@
 #
 #
 
-# imports
+# =========================================================================
+#  System Imports....
+# =========================================================================
 
 import sys
 import time
@@ -16,10 +18,18 @@ from datetime import datetime
 import random
 import binascii
 import struct
+import subprocess
+
+# =========================================================================
+#  Application imports
+# =========================================================================
 
 import config
 
-import subprocess
+# =========================================================================
+#  Raspberry PI imports
+# =========================================================================
+
 import RPi.GPIO as GPIO
 import smbus
 
@@ -37,13 +47,12 @@ sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
 import SDL_DS3231
 import Adafruit_BMP.BMP280 as BMP280
 import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
-
 import SDL_Pi_FRAM
 from RPi_AS3935 import RPi_AS3935
-
 import SDL_Pi_INA3221
-
 import SDL_Pi_TCA9545
+import Adafruit_SSD1306
+import Scroll_SSD1306
 
 # /*=========================================================================
 #    I2C ADDRESS/BITS
@@ -64,9 +73,6 @@ TCA9545_CONFIG_BUS3 = 0x08  # 1 = enable, 0 = disable
 
 # /*=========================================================================*/
 
-import Adafruit_SSD1306
-
-import Scroll_SSD1306
 
 ################
 # Device Present State Variables
