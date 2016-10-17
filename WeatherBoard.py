@@ -458,10 +458,14 @@ while True:
         print 'Wind Speed=\t%0.2f MPH' % (currentWindSpeed)
         # noinspection PyUnresolvedReferences
         if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, "Wind Speed=\t%0.2f MPH" % currentWindSpeed)
-            Scroll_SSD1306.addLineOLED(display, "Rain Total=\t%0.2f in" % totalRain)
+            # noinspection PyUnresolvedReferences
+            if config.OLED_Present:
+                Scroll_SSD1306.addLineOLED(display, "Wind Speed=\t%0.2f MPH" % currentWindSpeed)
+                Scroll_SSD1306.addLineOLED(display, "Rain Total=\t%0.2f in" % totalRain)
         if config.ADS1015_Present or config.ADS1115_Present:
-            Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
+            # noinspection PyUnresolvedReferences
+            if config.OLED_Present:
+                Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
 
         print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
         if config.ADS1015_Present or config.ADS1115_Present:
