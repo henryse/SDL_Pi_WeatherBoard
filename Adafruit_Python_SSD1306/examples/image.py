@@ -25,7 +25,6 @@ import Adafruit_SSD1306
 
 from PIL import Image
 
-
 # Raspberry Pi pin configuration:
 RST = 24
 # Note the following are only used with SPI:
@@ -66,7 +65,7 @@ else:
     image = Image.open('happycat_oled_32.ppm').convert('1')
 
 # Alternatively load a different format image, resize it, and convert to 1 bit color.
-#image = Image.open('happycat.png').resize((disp.width, disp.height), Image.ANTIALIAS).convert('1')
+# image = Image.open('happycat.png').resize((disp.width, disp.height), Image.ANTIALIAS).convert('1')
 
 # Display image.
 disp.image(image)

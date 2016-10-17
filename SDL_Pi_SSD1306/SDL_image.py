@@ -25,7 +25,6 @@ import Adafruit_SSD1306
 
 import Image
 
-
 # Raspberry Pi pin configuration:
 RST = 24
 # Note the following are only used with SPI:
@@ -41,7 +40,7 @@ SPI_DEVICE = 0
 # SPI_DEVICE = 0
 
 # 128x32 display with hardware I2C:
-#disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
+# disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 
 # 128x64 display with hardware I2C:
 # disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
@@ -63,12 +62,12 @@ disp.display()
 
 # Load image based on OLED display height.  Note that image is converted to 1 bit color.
 if disp.height == 64:
-	image = Image.open('happycat_oled_64.ppm').convert('1')
+    image = Image.open('happycat_oled_64.ppm').convert('1')
 else:
-	image = Image.open('happycat_oled_32.ppm').convert('1')
+    image = Image.open('happycat_oled_32.ppm').convert('1')
 
 # Alternatively load a different format image, resize it, and convert to 1 bit color.
-#image = Image.open('happycat.png').resize((disp.width, disp.height), Image.ANTIALIAS).convert('1')
+# image = Image.open('happycat.png').resize((disp.width, disp.height), Image.ANTIALIAS).convert('1')
 
 # Display image.
 disp.image(image)

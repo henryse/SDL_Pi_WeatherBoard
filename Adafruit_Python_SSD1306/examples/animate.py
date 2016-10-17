@@ -28,7 +28,6 @@ from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
-
 # Raspberry Pi pin configuration:
 RST = 24
 # Note the following are only used with SPI:
@@ -85,8 +84,8 @@ text = 'SSD1306 ORGANIC LED DISPLAY. THIS IS AN OLD SCHOOL DEMO SCROLLER!! GREET
 maxwidth, unused = draw.textsize(text, font=font)
 
 # Set animation and sine wave parameters.
-amplitude = height/4
-offset = height/2 - 4
+amplitude = height / 4
+offset = height / 2 - 4
 velocity = -2
 startpos = width
 
@@ -95,7 +94,7 @@ print('Press Ctrl-C to quit.')
 pos = startpos
 while True:
     # Clear image buffer by drawing a black filled box.
-    draw.rectangle((0,0,width,height), outline=0, fill=0)
+    draw.rectangle((0, 0, width, height), outline=0, fill=0)
     # Enumerate characters and draw them offset vertically based on a sine wave.
     x = pos
     for i, c in enumerate(text):
@@ -108,7 +107,7 @@ while True:
             x += char_width
             continue
         # Calculate offset from sine wave.
-        y = offset+math.floor(amplitude*math.sin(x/float(width)*2.0*math.pi))
+        y = offset + math.floor(amplitude * math.sin(x / float(width) * 2.0 * math.pi))
         # Draw text.
         draw.text((x, y), c, font=font, fill=255)
         # Increment x position based on chacacter width.

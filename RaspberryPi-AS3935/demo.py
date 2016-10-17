@@ -34,6 +34,7 @@ def handle_interrupt(channel):
         print "It was " + str(distance) + "km away. (%s)" % now
         print ""
 
+
 pin = 25
 
 GPIO.setup(pin, GPIO.IN)

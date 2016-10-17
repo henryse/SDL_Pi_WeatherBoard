@@ -289,7 +289,7 @@ if (config.Lightning_Mode == True):
     if (config.AS3935_Present == True):
         GPIO.setup(as3935pin, GPIO.IN)
         GPIO.add_event_detect(as3935pin, GPIO.RISING)
-    # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
+        # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
 
 ###############
 

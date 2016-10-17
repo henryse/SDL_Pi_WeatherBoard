@@ -28,7 +28,6 @@ import Image
 import ImageFont
 import ImageDraw
 
-
 # Raspberry Pi pin configuration:
 RST = 24
 # Note the following are only used with SPI:
@@ -47,7 +46,7 @@ SPI_DEVICE = 0
 disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
 
 # 128x64 display with hardware I2C:
-#disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
+# disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST)
 
 
 # Note you can change the I2C address by passing an i2c_address parameter like:
@@ -89,8 +88,8 @@ text = 'SSD1306 ORGANIC LED DISPLAY. THIS IS AN OLD SCHOOL DEMO SCROLLER!! GREET
 maxwidth, unused = draw.textsize(text, font=font)
 
 # Set animation and sine wave parameters.
-amplitude = height/4
-offset = height/2 - 4
+amplitude = height / 4
+offset = height / 2 - 4
 velocity = -2
 startpos = width
 
@@ -98,33 +97,33 @@ startpos = width
 print 'Press Ctrl-C to quit.'
 pos = startpos
 while True:
-	# Clear image buffer by drawing a black filled box.
-	draw.rectangle((0,0,width,height), outline=0, fill=0)
-	# Enumerate characters and draw them offset vertically based on a sine wave.
-	x = pos
-	for i, c in enumerate(text):
-		# Stop drawing if off the right side of screen.
-		if x > width:
-			break
-		# Calculate width but skip drawing if off the left side of screen.
-		if x < -10:
-			char_width, char_height = draw.textsize(c, font=font)
-			x += char_width
-			continue
-		# Calculate offset from sine wave.
-		y = offset+math.floor(amplitude*math.sin(x/float(width)*2.0*math.pi))
-		# Draw text.
-		draw.text((x, y), c, font=font, fill=255)
-		# Increment x position based on chacacter width.
-		char_width, char_height = draw.textsize(c, font=font)
-		x += char_width
-	# Draw the image buffer.
-	disp.image(image)
-	disp.display()
-	# Move position for next frame.
-	pos += velocity
-	# Start over if text has scrolled completely off left side of screen.
-	if pos < -maxwidth:
-		pos = startpos
-	# Pause briefly before drawing next frame.
-	time.sleep(0.1)
+    # Clear image buffer by drawing a black filled box.
+    draw.rectangle((0, 0, width, height), outline=0, fill=0)
+    # Enumerate characters and draw them offset vertically based on a sine wave.
+    x = pos
+    for i, c in enumerate(text):
+        # Stop drawing if off the right side of screen.
+        if x > width:
+            break
+        # Calculate width but skip drawing if off the left side of screen.
+        if x < -10:
+            char_width, char_height = draw.textsize(c, font=font)
+            x += char_width
+            continue
+        # Calculate offset from sine wave.
+        y = offset + math.floor(amplitude * math.sin(x / float(width) * 2.0 * math.pi))
+        # Draw text.
+        draw.text((x, y), c, font=font, fill=255)
+        # Increment x position based on chacacter width.
+        char_width, char_height = draw.textsize(c, font=font)
+        x += char_width
+    # Draw the image buffer.
+    disp.image(image)
+    disp.display()
+    # Move position for next frame.
+    pos += velocity
+    # Start over if text has scrolled completely off left side of screen.
+    if pos < -maxwidth:
+        pos = startpos
+    # Pause briefly before drawing next frame.
+    time.sleep(0.1)
