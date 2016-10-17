@@ -36,14 +36,14 @@ def addLineOLED(display, text):
     draw.text((0, lineheight * currentLine), text, font=font, fill=255)
     OLEDLines[currentLine] = text
 
-    if (currentLine == 5):
+    if currentLine == 5:
         for i in range(0, 5):
             j = 5 - i - 1
             draw.rectangle((0, lineheight * (j), 127, lineheight * (j + 1) - 1), outline=0, fill=0)
             draw.text((0, lineheight * (j)), OLEDLines[j], font=font, fill=255)
 
-    if (currentLine < 5):
-        currentLine = currentLine + 1
+    if currentLine < 5:
+        currentLine += 1
     else:
         currentLine = 5
         # rewrite lines
@@ -61,11 +61,11 @@ def addLineOLED(display, text):
     display.display()
 
 
-def addNumberedLineOLED(display, linenumber, text):
-    # write one line of text at linenumber
+def addNumberedLineOLED(display, line_number, text):
+    # write one line of text at lineNumber
 
     draw.rectangle((0, lineheight * currentLine, 127, lineheight * (currentLine + 1) - 1), outline=0, fill=0)
-    draw.text((0, linenumber * lineheight), text, font=font, fill=255)
+    draw.text((0, line_number * lineheight), text, font=font, fill=255)
 
     display.image(image)
     display.display()

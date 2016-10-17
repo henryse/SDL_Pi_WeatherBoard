@@ -98,17 +98,18 @@ config.WXLink_Present = False
 ##############
 
 # points to BUS0 initially - That is where the Weather Board is located
-if (config.Lightning_Mode == True):
+if config.Lightning_Mode:
     tca9545 = SDL_Pi_TCA9545.SDL_Pi_TCA9545(addr=TCA9545_ADDRESS, bus_enable=TCA9545_CONFIG_BUS0)
 
 
 def returnStatusLine(device, state):
-    returnString = device
-    if (state == True):
-        returnString = returnString + ":   \t\tPresent"
+    return_string = device
+    if state:
+        return_string += ":   \t\tPresent"
     else:
-        returnString = returnString + ":   \t\tNot Present"
-    return returnString
+        assert isinstance(return_string, object)
+        return_string += ":   \t\tNot Present"
+    return return_string
 
 
 ###############
