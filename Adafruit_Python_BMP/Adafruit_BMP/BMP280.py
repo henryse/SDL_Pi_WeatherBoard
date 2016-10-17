@@ -30,8 +30,8 @@ BMP280_DIG_P9 = 0x9E  # R   Signed Calibration data (16 bits)
 BMP280_CONTROL = 0xF4
 BMP280_RESET = 0xE0
 BMP280_CONFIG = 0xF5
-BMP280_PRESSUREDATA = 0xF7
-BMP280_TEMPDATA = 0xFA
+BMP280_PRESSURE_DATA = 0xF7
+BMP280_TEMP_DATA = 0xFA
 
 
 class BMP280(object):
@@ -107,17 +107,17 @@ class BMP280(object):
     def _compensate_temp(self, raw_temp):
         """ Compensate temperature """
         t1 = (((raw_temp >> 3) - (self.cal_t1 << 1)) *
-              (self.cal_t2)) >> 11
+              self.cal_t2) >> 11
 
-        t2 = (((((raw_temp >> 4) - (self.cal_t1)) *
-                ((raw_temp >> 4) - (self.cal_t1))) >> 12) *
-              (self.cal_t3)) >> 14
+        t2 = (((((raw_temp >> 4) - self.cal_t1) *
+                ((raw_temp >> 4) - self.cal_t1)) >> 12) *
+              self.cal_t3) >> 14
 
         return t1 + t2
 
     def read_temperature(self):
         """Gets the compensated temperature in degrees celsius."""
-        raw_temp = self.read_raw(BMP280_TEMPDATA)
+        raw_temp = self.read_raw(BMP280_TEMP_DATA)
         compensated_temp = self._compensate_temp(raw_temp)
         temp = float(((compensated_temp * 5 + 128) >> 8)) / 100
 
@@ -126,16 +126,16 @@ class BMP280(object):
 
     def read_pressure(self):
         """Gets the compensated pressure in Pascals."""
-        raw_temp = self.read_raw(BMP280_TEMPDATA)
+        raw_temp = self.read_raw(BMP280_TEMP_DATA)
         compensated_temp = self._compensate_temp(raw_temp)
-        raw_pressure = self.read_raw(BMP280_PRESSUREDATA)
+        raw_pressure = self.read_raw(BMP280_PRESSURE_DATA)
 
         p1 = compensated_temp - 128000
         p2 = p1 * p1 * self.cal_p6
         p2 += (p1 * self.cal_p5) << 17
         p2 += self.cal_p4 << 35
         p1 = ((p1 * p1 * self.cal_p3) >> 8) + ((p1 * self.cal_p2) << 12)
-        p1 = ((1 << 47) + p1) * (self.cal_p1) >> 33
+        p1 = ((1 << 47) + p1) * self.cal_p1 >> 33
 
         if 0 == p1:
             return 0
@@ -144,7 +144,7 @@ class BMP280(object):
         p = (((p << 31) - p2) * 3125) / p1
         p1 = (self.cal_p9 * (p >> 13) * (p >> 13)) >> 25
         p2 = (self.cal_p8 * p) >> 19
-        p = ((p + p1 + p2) >> 8) + ((self.cal_p7) << 4)
+        p = ((p + p1 + p2) >> 8) + (self.cal_p7 << 4)
 
         return float(p / 256)
 
@@ -157,7 +157,7 @@ class BMP280(object):
         return altitude
 
     def read_sealevel_pressure(self, altitude_m=0.0):
-        """Calculates the pressure at sealevel when given a known altitude in
+        """Calculates the pressure at sea level when given a known altitude in
         meters. Returns a value in Pascals."""
         pressure = float(self.read_pressure())
         p0 = pressure / pow(1.0 - altitude_m / 44330.0, 5.255)

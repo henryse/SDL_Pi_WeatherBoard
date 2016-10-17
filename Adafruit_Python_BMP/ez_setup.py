@@ -75,7 +75,7 @@ def get_zip_class():
             return self
 
         def __exit__(self, type, value, traceback):
-            self.close
+            self.close()
 
     return zipfile.ZipFile if hasattr(zipfile.ZipFile, '__exit__') else \
         ContextualZipFile
@@ -121,6 +121,7 @@ def _do_download(version, download_base, to_dir, download_delay):
     setuptools.bootstrap_install_from = egg
 
 
+# noinspection PyUnresolvedReferences
 def use_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
                    to_dir=os.curdir, download_delay=15):
     to_dir = os.path.abspath(to_dir)
