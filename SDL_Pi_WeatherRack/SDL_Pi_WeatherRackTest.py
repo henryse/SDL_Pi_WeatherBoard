@@ -8,7 +8,6 @@
 #
 #
 
-
 # imports
 
 import time
@@ -16,8 +15,6 @@ import sys
 
 sys.path.append('../Adafruit_ADS1x15')
 sys.path.append('../')
-
-import config
 
 import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
 
@@ -54,10 +51,10 @@ while True:
 
     currentWindSpeed = weatherStation.current_wind_speed() / 1.6
     currentWindGust = weatherStation.get_wind_gust() / 1.6
-    totalRain = totalRain + weatherStation.get_current_rain_total() / 25.4
-    print("Rain Total=\t%0.2f in") % (totalRain)
-    print("Wind Speed=\t%0.2f MPH") % (currentWindSpeed)
-    print("MPH wind_gust=\t%0.2f MPH") % (currentWindGust)
+    totalRain += weatherStation.get_current_rain_total() / 25.4
+    print "Rain Total=\t%0.2f in" % totalRain
+    print "Wind Speed=\t%0.2f MPH" % currentWindSpeed
+    print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
 
     print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
     print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
