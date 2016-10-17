@@ -48,19 +48,19 @@ import SDL_Pi_TCA9545
 # /*=========================================================================
 #    I2C ADDRESS/BITS
 #    -----------------------------------------------------------------------*/
-TCA9545_ADDRESS = (0x73)  # 1110011 (A0+A1=VDD)
+TCA9545_ADDRESS = 0x73  # 1110011 (A0+A1=VDD)
 # /*=========================================================================*/
 
 # /*=========================================================================
 #    CONFIG REGISTER (R/W)
 #    -----------------------------------------------------------------------*/
-TCA9545_REG_CONFIG = (0x00)
+TCA9545_REG_CONFIG = 0x00
 #    /*---------------------------------------------------------------------*/
 
-TCA9545_CONFIG_BUS0 = (0x01)  # 1 = enable, 0 = disable
-TCA9545_CONFIG_BUS1 = (0x02)  # 1 = enable, 0 = disable
-TCA9545_CONFIG_BUS2 = (0x04)  # 1 = enable, 0 = disable
-TCA9545_CONFIG_BUS3 = (0x08)  # 1 = enable, 0 = disable
+TCA9545_CONFIG_BUS0 = 0x01  # 1 = enable, 0 = disable
+TCA9545_CONFIG_BUS1 = 0x02  # 1 = enable, 0 = disable
+TCA9545_CONFIG_BUS2 = 0x04  # 1 = enable, 0 = disable
+TCA9545_CONFIG_BUS3 = 0x08  # 1 = enable, 0 = disable
 
 # /*=========================================================================*/
 
@@ -74,12 +74,12 @@ import Scroll_SSD1306
 
 # indicate interrupt has happened from as3936
 
-as3935_Interrupt_Happened = False;
+as3935_Interrupt_Happened = False
 # set to true if you are building the Weather Board project with Lightning Sensor
 config.Lightning_Mode = False
 
 # set to true if you are building the solar powered version
-config.SolarPower_Mode = False;
+config.SolarPower_Mode = False
 
 config.SunAirPlus_Present = False
 config.AS3935_Present = False
@@ -143,7 +143,7 @@ weatherStation.setWindMode(SDL_MODE_SAMPLE, 5.0)
 
 WXLink = smbus.SMBus(1)
 try:
-    data = WXLink.read_i2c_block_data(0x08, 0);
+    data = WXLink.read_i2c_block_data(0x08, 0)
     config.WXLink_Present = True
 except:
     config.WXLink_Present = False
@@ -152,7 +152,7 @@ except:
 
 # DS3231/AT24C32 Setup
 filename = time.strftime("%Y-%m-%d%H:%M:%SRTCTest") + ".txt"
-starttime = datetime.utcnow()
+start_time = datetime.utcnow()
 
 ds3231 = SDL_DS3231.SDL_DS3231(1, 0x68)
 
@@ -223,8 +223,9 @@ except:
 ################
 
 # ad3935 Set up Lightning Detector
-if (config.Lightning_Mode == True):
+if config.Lightning_Mode:
     # switch to BUS1 - lightning detector is on Bus1
+    # noinspection PyUnboundLocalVariable
     tca9545.write_control_register(TCA9545_CONFIG_BUS1)
 
     as3935 = RPi_AS3935(address=0x03, bus=1)
@@ -242,9 +243,9 @@ if (config.Lightning_Mode == True):
         # back to BUS0
         tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
-    if (config.AS3935_Present == True):
-        i2ccommand = "sudo i2cdetect -y 1"
-        output = subprocess.check_output(i2ccommand, shell=True, stderr=subprocess.STDOUT)
+    if config.AS3935_Present:
+        i2c_command = "sudo i2cdetect -y 1"
+        output = subprocess.check_output(i2c_command, shell=True, stderr=subprocess.STDOUT)
         print output
         as3935.set_noise_floor(0)
         as3935.calibrate(tun_cap=0x0F)
@@ -284,10 +285,10 @@ def respond_to_as3935_interrupt():
 
 
 
-if (config.Lightning_Mode == True):
+if config.Lightning_Mode:
     as3935pin = 13
 
-    if (config.AS3935_Present == True):
+    if config.AS3935_Present:
         GPIO.setup(as3935pin, GPIO.IN)
         GPIO.add_event_detect(as3935pin, GPIO.RISING)
         # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
@@ -304,12 +305,12 @@ try:
 except:
     config.FRAM_Present = False
 
-###############   
+###############
 
 # set up SunAirPlus
 
 
-if (config.SolarPower_Mode == True):
+if config.SolarPower_Mode:
 
     try:
         # switch to BUS2 -  SunAirPlus is on Bus2
@@ -392,14 +393,14 @@ block2 = ""
 
 while True:
 
-    if (config.Lightning_Mode == True):
+    if config.Lightning_Mode:
         # switch to BUS0
         print "switch to Bus0"
         tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
     print "---------------------------------------- "
     print "----------------- "
-    if (config.DS3231_Present == True):
+    if config.DS3231_Present:
         print " DS3231 Real Time Clock"
     else:
         print " DS3231 Real Time Clock Not Present"
@@ -407,14 +408,14 @@ while True:
     print "----------------- "
     #
 
-    if (config.DS3231_Present == True):
-        currenttime = datetime.utcnow()
+    if config.DS3231_Present:
+        current_time = datetime.utcnow()
 
-        deltatime = currenttime - starttime
+        delta_time = current_time - start_time
 
         print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
 
-        if (config.OLED_Present):
+        if config.OLED_Present:
             Scroll_SSD1306.addLineOLED(display, "%s" % ds3231.read_datetime())
 
         print "DS3231=\t\t%s" % ds3231.read_datetime()
@@ -424,20 +425,20 @@ while True:
 
     print "----------------- "
     print " WeatherRack Weather Sensors"
-    if (config.WXLink_Present == True):
+    if config.WXLink_Present:
         print " WXLink Remote WeatherRack"
     else:
         print " WeatherRack Local"
     print "----------------- "
     #
     print "----------------- "
-    if (config.AM2315_Present == True):
+    if config.AM2315_Present:
         print " AM2315 Temperature/Humidity Sensor"
     else:
         print " AM2315 Temperature/Humidity  Sensor Not Present"
     print "----------------- "
 
-    if (config.AM2315_Present):
+    if config.AM2315_Present:
         temperature, humidity, crc_check = am2315.sense()
         print "AM2315 temperature: %0.1f" % temperature
         print "AM2315 humidity: %0.1f" % humidity
@@ -445,27 +446,27 @@ while True:
     print "----------------- "
     print "----------------- "
 
-    if (config.WXLink_Present == False):
+    if not config.WXLink_Present:
 
         currentWindSpeed = weatherStation.current_wind_speed() / 1.6
         currentWindGust = weatherStation.get_wind_gust() / 1.6
-        totalRain = totalRain + weatherStation.get_current_rain_total() / 25.4
-        print("Rain Total=\t%0.2f in") % (totalRain)
-        print("Wind Speed=\t%0.2f MPH") % (currentWindSpeed)
-        if (config.OLED_Present):
+        totalRain += weatherStation.get_current_rain_total() / 25.4
+        print "Rain Total=\t%0.2f in" % (totalRain)
+        print 'Wind Speed=\t%0.2f MPH' % (currentWindSpeed)
+        if config.OLED_Present:
             Scroll_SSD1306.addLineOLED(display, ("Wind Speed=\t%0.2f MPH") % (currentWindSpeed))
             Scroll_SSD1306.addLineOLED(display, ("Rain Total=\t%0.2f in") % (totalRain))
-        if (config.ADS1015_Present or config.ADS1115_Present):
+        if config.ADS1015_Present or config.ADS1115_Present:
             Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
 
-        print("MPH wind_gust=\t%0.2f MPH") % (currentWindGust)
-        if (config.ADS1015_Present or config.ADS1115_Present):
+        print "MPH wind_gust=\t%0.2f MPH" % (currentWindGust)
+        if config.ADS1015_Present or config.ADS1115_Present:
             print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
             print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
 
-    if (config.WXLink_Present == True):
-        oldblock1 = block1
-        oldblock2 = block2
+    if config.WXLink_Present:
+        old_block1 = block1
+        old_block2 = block2
         try:
             print "-----------"
             print "block 1"
@@ -479,8 +480,8 @@ while True:
             print "-----------"
         except:
             print "WXLink Read failed - Old Data Kept"
-            block1 = oldblock1
-            block2 = oldblock2
+            block1 = old_block1
+            block2 = old_block2
 
         currentWindSpeed = struct.unpack('f', str(block1[9:13]))[0] / 1.6
 
@@ -488,9 +489,9 @@ while True:
 
         totalRain = struct.unpack('l', str(block1[17:21]))[0] / 25.4
 
-        print("Rain Total=\t%0.2f in") % (totalRain)
-        print("Wind Speed=\t%0.2f MPH") % (currentWindSpeed)
-        if (config.OLED_Present):
+        print "Rain Total=\t%0.2f in" % (totalRain)
+        print "Wind Speed=\t%0.2f MPH" % (currentWindSpeed)
+        if config.OLED_Present:
             Scroll_SSD1306.addLineOLED(display, ("Wind Speed=\t%0.2f MPH") % (currentWindSpeed))
             Scroll_SSD1306.addLineOLED(display, ("Rain Total=\t%0.2f in") % (totalRain))
             Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
@@ -529,18 +530,18 @@ while True:
 
     print "----------------- "
     print "----------------- "
-    if (config.BMP280_Present == True):
+    if config.BMP280_Present:
         print " BMP280 Barometer"
     else:
         print " BMP280 Barometer Not Present"
     print "----------------- "
 
-    if (config.BMP280_Present):
+    if config.BMP280_Present:
         print 'Temperature = \t{0:0.2f} C'.format(bmp280.read_temperature())
         print 'Pressure = \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000)
         print 'Altitude = \t{0:0.2f} m'.format(bmp280.read_altitude())
         print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp280.read_sealevel_pressure() / 1000)
-        if (config.OLED_Present):
+        if config.OLED_Present:
             Scroll_SSD1306.addLineOLED(display, 'Press= \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000))
             if (config.HTU21DF_Present == False):
                 Scroll_SSD1306.addLineOLED(display, 'InTemp= \t{0:0.2f} C'.format(bmp280.read_temperature()))
@@ -554,7 +555,7 @@ while True:
     print "----------------- "
 
     # We use a C library for this device as it just doesn't play well with Python and smbus/I2C libraries
-    if (config.HTU21DF_Present):
+    if config.HTU21DF_Present:
         HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
         splitstring = HTU21DFOut.split()
 
@@ -562,7 +563,7 @@ while True:
         HTUhumidity = float(splitstring[1])
         print "Temperature = \t%0.2f C" % HTUtemperature
         print "Humidity = \t%0.2f %%" % HTUhumidity
-        if (config.OLED_Present):
+        if config.OLED_Present:
             Scroll_SSD1306.addLineOLED(display, "InTemp = \t%0.2f C" % HTUtemperature)
     print "----------------- "
 
@@ -573,27 +574,27 @@ while True:
         print " AS3935 Lightning Detector Not Present"
     print "----------------- "
 
-    if (config.AS3935_Present):
-        if (GPIO.event_detected(as3935pin)):
+    if config.AS3935_Present:
+        if GPIO.event_detected(as3935pin):
             respond_to_as3935_interrupt()
 
         print "Last result from AS3935:"
 
-        if (as3935LastInterrupt == 0x00):
+        if as3935LastInterrupt == 0x00:
             print "----No Lightning detected---"
 
-        if (as3935LastInterrupt == 0x01):
+        if as3935LastInterrupt == 0x01:
             print "Noise Floor: %s" % as3935LastStatus
             as3935LastInterrupt = 0x00
 
-        if (as3935LastInterrupt == 0x04):
+        if as3935LastInterrupt == 0x04:
             print "Disturber: %s" % as3935LastStatus
             as3935LastInterrupt = 0x00
 
-        if (as3935LastInterrupt == 0x08):
+        if as3935LastInterrupt == 0x08:
             print "Lightning: %s" % as3935LastStatus
             as3935LightningCount += 1
-            if (config.OLED_Present):
+            if config.OLED_Present:
                 Scroll_SSD1306.addLineOLED(display, '')
                 Scroll_SSD1306.addLineOLED(display, '---LIGHTNING---')
                 Scroll_SSD1306.addLineOLED(display, '')
@@ -603,13 +604,13 @@ while True:
     print "----------------- "
 
     print "----------------- "
-    if (config.FRAM_Present):
+    if config.FRAM_Present:
         print " FRAM Present"
     else:
         print " FRAM Not Present"
     print "----------------- "
 
-    if (config.FRAM_Present):
+    if config.FRAM_Present:
         print "writing first 3 addresses with random data"
         for x in range(0, 3):
             value = random.randint(0, 255)
@@ -624,14 +625,14 @@ while True:
     print
     print "----------------- "
 
-    if (config.SunAirPlus_Present):
+    if config.SunAirPlus_Present:
         print " SunAirPlus Present"
     else:
         print " SunAirPlus Not Present"
     print "----------------- "
 
-    if (config.SolarPower_Mode):
-        if (config.SunAirPlus_Present):
+    if config.SolarPower_Mode:
+        if config.SunAirPlus_Present:
             tca9545.write_control_register(TCA9545_CONFIG_BUS2)
             shuntvoltage1 = 0
             busvoltage1 = 0
