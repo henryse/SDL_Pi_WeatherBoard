@@ -321,7 +321,7 @@ if config.SolarPower_Mode:
         SOLAR_CELL_CHANNEL = 2
         OUTPUT_CHANNEL = 3
 
-        busvoltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
+        bus_voltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
         config.SunAirPlus_Present = True
     except:
         config.SunAirPlus_Present = False
@@ -383,6 +383,7 @@ print returnStatusLine("AM2315", config.AM2315_Present)
 print returnStatusLine("ADS1015", config.ADS1015_Present)
 print returnStatusLine("ADS1115", config.ADS1115_Present)
 print returnStatusLine("AS3935", config.AS3935_Present)
+# noinspection PyUnresolvedReferences
 print returnStatusLine("OLED", config.OLED_Present)
 print returnStatusLine("SunAirPlus", config.SunAirPlus_Present)
 print returnStatusLine("WXLink", config.WXLink_Present)
@@ -415,6 +416,7 @@ while True:
 
         print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
 
+        # noinspection PyUnresolvedReferences
         if config.OLED_Present:
             Scroll_SSD1306.addLineOLED(display, "%s" % ds3231.read_datetime())
 
@@ -439,6 +441,7 @@ while True:
     print "----------------- "
 
     if config.AM2315_Present:
+        # noinspection PyUnboundLocalVariable
         temperature, humidity, crc_check = am2315.sense()
         print "AM2315 temperature: %0.1f" % temperature
         print "AM2315 humidity: %0.1f" % humidity
@@ -453,13 +456,14 @@ while True:
         totalRain += weatherStation.get_current_rain_total() / 25.4
         print "Rain Total=\t%0.2f in" % (totalRain)
         print 'Wind Speed=\t%0.2f MPH' % (currentWindSpeed)
+        # noinspection PyUnresolvedReferences
         if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, ("Wind Speed=\t%0.2f MPH") % (currentWindSpeed))
-            Scroll_SSD1306.addLineOLED(display, ("Rain Total=\t%0.2f in") % (totalRain))
+            Scroll_SSD1306.addLineOLED(display, "Wind Speed=\t%0.2f MPH" % currentWindSpeed)
+            Scroll_SSD1306.addLineOLED(display, "Rain Total=\t%0.2f in" % totalRain)
         if config.ADS1015_Present or config.ADS1115_Present:
             Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
 
-        print "MPH wind_gust=\t%0.2f MPH" % (currentWindGust)
+        print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
         if config.ADS1015_Present or config.ADS1115_Present:
             print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
             print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
@@ -470,11 +474,11 @@ while True:
         try:
             print "-----------"
             print "block 1"
-            block1 = WXLink.read_i2c_block_data(0x08, 0);
+            block1 = WXLink.read_i2c_block_data(0x08, 0)
             print ''.join('{:02x}'.format(x) for x in block1)
             block1 = bytearray(block1)
             print "block 2"
-            block2 = WXLink.read_i2c_block_data(0x08, 1);
+            block2 = WXLink.read_i2c_block_data(0x08, 1)
             block2 = bytearray(block2)
             print ''.join('{:02x}'.format(x) for x in block2)
             print "-----------"
@@ -489,11 +493,12 @@ while True:
 
         totalRain = struct.unpack('l', str(block1[17:21]))[0] / 25.4
 
-        print "Rain Total=\t%0.2f in" % (totalRain)
-        print "Wind Speed=\t%0.2f MPH" % (currentWindSpeed)
+        print "Rain Total=\t%0.2f in" % totalRain
+        print "Wind Speed=\t%0.2f MPH" % currentWindSpeed
+        # noinspection PyUnresolvedReferences
         if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, ("Wind Speed=\t%0.2f MPH") % (currentWindSpeed))
-            Scroll_SSD1306.addLineOLED(display, ("Rain Total=\t%0.2f in") % (totalRain))
+            Scroll_SSD1306.addLineOLED(display, "Wind Speed=\t%0.2f MPH" % currentWindSpeed)
+            Scroll_SSD1306.addLineOLED(display, "Rain Total=\t%0.2f in" % totalRain)
             Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
 
         currentWindDirection = struct.unpack('H', str(block1[7:9]))[0]
@@ -541,9 +546,10 @@ while True:
         print 'Pressure = \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000)
         print 'Altitude = \t{0:0.2f} m'.format(bmp280.read_altitude())
         print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp280.read_sealevel_pressure() / 1000)
+        # noinspection PyUnresolvedReferences
         if config.OLED_Present:
             Scroll_SSD1306.addLineOLED(display, 'Press= \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000))
-            if (config.HTU21DF_Present == False):
+            if not config.HTU21DF_Present:
                 Scroll_SSD1306.addLineOLED(display, 'InTemp= \t{0:0.2f} C'.format(bmp280.read_temperature()))
     print "----------------- "
 
@@ -557,24 +563,26 @@ while True:
     # We use a C library for this device as it just doesn't play well with Python and smbus/I2C libraries
     if config.HTU21DF_Present:
         HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
-        splitstring = HTU21DFOut.split()
+        split_string = HTU21DFOut.split()
 
-        HTUtemperature = float(splitstring[0])
-        HTUhumidity = float(splitstring[1])
-        print "Temperature = \t%0.2f C" % HTUtemperature
-        print "Humidity = \t%0.2f %%" % HTUhumidity
+        htu_temperature = float(split_string[0])
+        htu_humidity = float(split_string[1])
+        print "Temperature = \t%0.2f C" % htu_temperature
+        print "Humidity = \t%0.2f %%" % htu_humidity
+        # noinspection PyUnresolvedReferences
         if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, "InTemp = \t%0.2f C" % HTUtemperature)
+            Scroll_SSD1306.addLineOLED(display, "InTemp = \t%0.2f C" % htu_temperature)
     print "----------------- "
 
     print "----------------- "
-    if (config.AS3935_Present):
+    if config.AS3935_Present:
         print " AS3935 Lightning Detector"
     else:
         print " AS3935 Lightning Detector Not Present"
     print "----------------- "
 
     if config.AS3935_Present:
+        # noinspection PyUnboundLocalVariable
         if GPIO.event_detected(as3935pin):
             respond_to_as3935_interrupt()
 
@@ -594,12 +602,14 @@ while True:
         if as3935LastInterrupt == 0x08:
             print "Lightning: %s" % as3935LastStatus
             as3935LightningCount += 1
+            # noinspection PyUnresolvedReferences
             if config.OLED_Present:
                 Scroll_SSD1306.addLineOLED(display, '')
                 Scroll_SSD1306.addLineOLED(display, '---LIGHTNING---')
                 Scroll_SSD1306.addLineOLED(display, '')
             as3935LastInterrupt = 0x00
 
+        # noinspection PyUnboundLocalVariable
         print "Lightning Count = ", as3935LightningCount
     print "----------------- "
 
@@ -634,53 +644,53 @@ while True:
     if config.SolarPower_Mode:
         if config.SunAirPlus_Present:
             tca9545.write_control_register(TCA9545_CONFIG_BUS2)
-            shuntvoltage1 = 0
-            busvoltage1 = 0
+            shunt_voltage1 = 0
+            bus_voltage1 = 0
             current_mA1 = 0
-            loadvoltage1 = 0
+            load_voltage1 = 0
 
-            busvoltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
-            shuntvoltage1 = sunAirPlus.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
+            bus_voltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
+            shunt_voltage1 = sunAirPlus.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
             # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
             current_mA1 = sunAirPlus.getCurrent_mA(LIPO_BATTERY_CHANNEL)
 
-            loadvoltage1 = busvoltage1 + (shuntvoltage1 / 1000)
+            load_voltage1 = bus_voltage1 + (shunt_voltage1 / 1000)
 
-            print "LIPO_Battery Bus Voltage: %3.2f V " % busvoltage1
-            print "LIPO_Battery Shunt Voltage: %3.2f mV " % shuntvoltage1
-            print "LIPO_Battery Load Voltage:  %3.2f V" % loadvoltage1
+            print "LIPO_Battery Bus Voltage: %3.2f V " % bus_voltage1
+            print "LIPO_Battery Shunt Voltage: %3.2f mV " % shunt_voltage1
+            print "LIPO_Battery Load Voltage:  %3.2f V" % load_voltage1
             print "LIPO_Battery Current 1:  %3.2f mA" % current_mA1
             print
 
-            shuntvoltage2 = 0
-            busvoltage2 = 0
+            shunt_voltage2 = 0
+            bus_voltage2 = 0
             current_mA2 = 0
-            loadvoltage2 = 0
+            load_voltage2 = 0
 
-            busvoltage2 = sunAirPlus.getBusVoltage_V(SOLAR_CELL_CHANNEL)
-            shuntvoltage2 = sunAirPlus.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
+            bus_voltage2 = sunAirPlus.getBusVoltage_V(SOLAR_CELL_CHANNEL)
+            shunt_voltage2 = sunAirPlus.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
             current_mA2 = -sunAirPlus.getCurrent_mA(SOLAR_CELL_CHANNEL)
-            loadvoltage2 = busvoltage2 + (shuntvoltage2 / 1000)
+            load_voltage2 = bus_voltage2 + (shunt_voltage2 / 1000)
 
-            print "Solar Cell Bus Voltage 2:  %3.2f V " % busvoltage2
-            print "Solar Cell Shunt Voltage 2: %3.2f mV " % shuntvoltage2
-            print "Solar Cell Load Voltage 2:  %3.2f V" % loadvoltage2
+            print "Solar Cell Bus Voltage 2:  %3.2f V " % bus_voltage2
+            print "Solar Cell Shunt Voltage 2: %3.2f mV " % shunt_voltage2
+            print "Solar Cell Load Voltage 2:  %3.2f V" % load_voltage2
             print "Solar Cell Current 2:  %3.2f mA" % current_mA2
             print
 
-            shuntvoltage3 = 0
-            busvoltage3 = 0
+            shunt_voltage3 = 0
+            bus_voltage3 = 0
             current_mA3 = 0
-            loadvoltage3 = 0
+            load_voltage3 = 0
 
-            busvoltage3 = sunAirPlus.getBusVoltage_V(OUTPUT_CHANNEL)
-            shuntvoltage3 = sunAirPlus.getShuntVoltage_mV(OUTPUT_CHANNEL)
+            bus_voltage3 = sunAirPlus.getBusVoltage_V(OUTPUT_CHANNEL)
+            shunt_voltage3 = sunAirPlus.getShuntVoltage_mV(OUTPUT_CHANNEL)
             current_mA3 = sunAirPlus.getCurrent_mA(OUTPUT_CHANNEL)
-            loadvoltage3 = busvoltage3 + (shuntvoltage3 / 1000)
+            load_voltage3 = bus_voltage3 + (shunt_voltage3 / 1000)
 
-            print "Output Bus Voltage 3:  %3.2f V " % busvoltage3
-            print "Output Shunt Voltage 3: %3.2f mV " % shuntvoltage3
-            print "Output Load Voltage 3:  %3.2f V" % loadvoltage3
+            print "Output Bus Voltage 3:  %3.2f V " % bus_voltage3
+            print "Output Shunt Voltage 3: %3.2f mV " % shunt_voltage3
+            print "Output Load Voltage 3:  %3.2f V" % load_voltage3
             print "Output Current 3:  %3.2f mA" % current_mA3
             print
             tca9545.write_control_register(TCA9545_CONFIG_BUS1)
