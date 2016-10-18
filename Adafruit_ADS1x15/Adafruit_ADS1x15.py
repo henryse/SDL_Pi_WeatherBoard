@@ -8,7 +8,8 @@ from Adafruit_I2C import Adafruit_I2C
 # ===========================================================================
 # ADS1x15 Class
 #
-# Originally written by K. Townsend, Adafruit (https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code/tree/master/Adafruit_ADS1x15)
+# Originally written by K. Townsend,
+# Adafruit (https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code/tree/master/Adafruit_ADS1x15)
 # Updates and new functions implementation by Pedro Villanueva, 03/2013.
 # The only error in the original code was in line 57:
 #              __ADS1015_REG_CONFIG_DR_920SPS    = 0x0050
