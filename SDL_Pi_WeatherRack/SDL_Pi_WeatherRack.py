@@ -150,13 +150,13 @@ class SDL_Pi_WeatherRack:
 
     def __init__(self, pinAnem, pinRain, ADMode):
 
-        if enable_pi_emulator:
+        if not enable_pi_emulator:
             GPIO.setup(pinAnem, GPIO.IN)
             GPIO.setup(pinRain, GPIO.IN)
 
         # when a falling edge is detected on port pinAnem, regardless of whatever
         # else is happening in the program, the function callback will be run
-        if enable_pi_emulator:
+        if not enable_pi_emulator:
             GPIO.add_event_detect(pinAnem, GPIO.RISING, callback=self.serviceInterruptAnem)
             GPIO.add_event_detect(pinRain, GPIO.RISING, callback=self.serviceInterruptRain)
 
