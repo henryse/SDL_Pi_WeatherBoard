@@ -28,28 +28,29 @@ try:
     import RPi.GPIO as GPIO
     import smbus
 
-    sys.path.append('./SDL_Pi_SSD1306')
-    sys.path.append('./SDL_Pi_INA3221')
-    sys.path.append('./RTC_SDL_DS3231')
-    sys.path.append('./Adafruit_Python_BMP')
-    sys.path.append('./Adafruit_Python_GPIO')
-    sys.path.append('./Adafruit_Python_SSD1306')
-    sys.path.append('./SDL_Pi_WeatherRack')
-    sys.path.append('./SDL_Pi_FRAM')
-    sys.path.append('./SDL_Pi_TCA9545')
-    sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
-
-    import SDL_DS3231
-    import Adafruit_BMP.BMP280 as BMP280
-    import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
-    import SDL_Pi_FRAM
-    from RPi_AS3935 import RPi_AS3935
-    import SDL_Pi_INA3221
-    import SDL_Pi_TCA9545
-    import Adafruit_SSD1306
-    import Scroll_SSD1306
 except ImportError:
     enable_pi_emulator = True
+
+sys.path.append('./SDL_Pi_SSD1306')
+sys.path.append('./SDL_Pi_INA3221')
+sys.path.append('./RTC_SDL_DS3231')
+sys.path.append('./Adafruit_Python_BMP')
+sys.path.append('./Adafruit_Python_GPIO')
+sys.path.append('./Adafruit_Python_SSD1306')
+sys.path.append('./SDL_Pi_WeatherRack')
+sys.path.append('./SDL_Pi_FRAM')
+sys.path.append('./SDL_Pi_TCA9545')
+sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
+
+import SDL_DS3231
+import Adafruit_BMP.BMP280 as BMP280
+import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
+import SDL_Pi_FRAM
+from RPi_AS3935 import RPi_AS3935
+import SDL_Pi_INA3221
+import SDL_Pi_TCA9545
+import Adafruit_SSD1306
+import Scroll_SSD1306
 
 # =========================================================================
 #   I2C ADDRESS/BITS

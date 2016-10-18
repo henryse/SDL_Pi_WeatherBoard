@@ -8,7 +8,6 @@
 
 # imports
 
-import sys
 import time
 import datetime
 import random

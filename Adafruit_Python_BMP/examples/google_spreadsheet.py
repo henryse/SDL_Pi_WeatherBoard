@@ -46,8 +46,8 @@ def login_open_sheet(email, password, spreadsheet):
     """Connect to Google Docs spreadsheet and return the first worksheet."""
     try:
         gc = gspread.login(email, password)
-        worksheet = gc.open(spreadsheet).sheet1
-        return worksheet
+        work_sheet = gc.open(spreadsheet).sheet1
+        return work_sheet
     except:
         print 'Unable to login and get spreadsheet.  Check email, password, spreadsheet name.'
         sys.exit(1)

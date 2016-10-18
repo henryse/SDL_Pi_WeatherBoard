@@ -74,7 +74,7 @@ def get_zip_class():
         def __enter__(self):
             return self
 
-        def __exit__(self, type, value, traceback):
+        def __exit__(self, zip_type, value, traceback):
             self.close()
 
     return zipfile.ZipFile if hasattr(zipfile.ZipFile, '__exit__') else \
@@ -108,7 +108,7 @@ def _do_download(version, download_base, to_dir, download_delay):
                        % (version, sys.version_info[0], sys.version_info[1]))
     if not os.path.exists(egg):
         archive = download_setuptools(version, download_base,
-                                      to_dir, download_delay)
+                                      to_dir)
         _build_egg(egg, archive, to_dir)
     sys.path.insert(0, egg)
 
@@ -167,7 +167,7 @@ def _clean_check(cmd, target):
         raise
 
 
-def download_file_powershell(url, target):
+def download_file_powershell(target):
     """
     Download the file at url to target using Powershell (which will validate
     trust). Raise an exception if the command cannot complete.
@@ -181,7 +181,7 @@ def download_file_powershell(url, target):
     _clean_check(cmd, target)
 
 
-def has_powershell():
+def has_power_shell():
     if platform.system() != 'Windows':
         return False
     cmd = ['powershell', '-Command', 'echo test']
@@ -196,7 +196,7 @@ def has_powershell():
     return True
 
 
-download_file_powershell.viable = has_powershell
+download_file_powershell.viable = has_power_shell
 
 
 def download_file_curl(url, target):
@@ -282,7 +282,7 @@ def get_best_downloader():
 
 
 def download_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
-                        to_dir=os.curdir, delay=15, downloader_factory=get_best_downloader):
+                        to_dir=os.curdir, downloader_factory=get_best_downloader):
     """
     Download setuptools from a specified location and return its filename
 

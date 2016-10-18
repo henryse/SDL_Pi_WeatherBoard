@@ -39,8 +39,8 @@ def addLineOLED(display, text):
     if currentLine == 5:
         for i in range(0, 5):
             j = 5 - i - 1
-            draw.rectangle((0, lineheight * (j), 127, lineheight * (j + 1) - 1), outline=0, fill=0)
-            draw.text((0, lineheight * (j)), OLEDLines[j], font=font, fill=255)
+            draw.rectangle((0, lineheight * j, 127, lineheight * (j + 1) - 1), outline=0, fill=0)
+            draw.text((0, lineheight * j), OLEDLines[j], font=font, fill=255)
 
     if currentLine < 5:
         currentLine += 1

@@ -20,7 +20,6 @@
 # THE SOFTWARE.
 
 import operator
-import time
 
 import Adafruit_GPIO as GPIO
 

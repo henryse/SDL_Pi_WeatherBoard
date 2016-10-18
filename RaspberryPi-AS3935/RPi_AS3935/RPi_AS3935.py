@@ -1,5 +1,12 @@
 import time
 
+enable_pi_emulator = False
+try:
+    # noinspection PyUnresolvedReferences
+    import smbus
+except ImportError:
+    enable_pi_emulator = True
+
 
 class RPi_AS3935:
     """A basic class used for interacting with the AS3935 lightning
@@ -7,8 +14,8 @@ class RPi_AS3935:
 
     def __init__(self, address, bus=0):
         self.address = address
-        import smbus
-        self.i2cbus = smbus.SMBus(bus)
+        if not enable_pi_emulator:
+            self.i2cbus = smbus.SMBus(bus)
 
     def calibrate(self, tun_cap=None):
         """Calibrate the lightning sensor - this takes up to half a second
@@ -20,7 +27,7 @@ class RPi_AS3935:
         time.sleep(0.08)
         self.read_data()
         if tun_cap is not None:
-            if tun_cap < 0x10 and tun_cap > -1:
+            if 0x10 > tun_cap > -1:
                 self.set_byte(0x08, (self.registers[0x08] & 0xF0) | tun_cap)
                 time.sleep(0.002)
             else:
@@ -85,19 +92,18 @@ class RPi_AS3935:
         """
         floor = self.get_noise_floor()
         if floor > min_noise:
-            floor = floor - 1
+            floor -= 1
             self.set_noise_floor(floor)
         return floor
 
     def raise_noise_floor(self, max_noise=7):
         """Raise the noise floor by one step
-
         max_noise is the maximum step that the noise_floor should be
         raised to.
         """
         floor = self.get_noise_floor()
         if floor < max_noise:
-            floor = floor + 1
+            floor += 1
             self.set_noise_floor(floor)
         return floor
 
@@ -213,7 +219,8 @@ class RPi_AS3935:
 
         This method should rarely be used directly.
         """
-        self.i2cbus.write_byte_data(self.address, register, value)
+        if not enable_pi_emulator:
+            self.i2cbus.write_byte_data(self.address, register, value)
 
     def read_data(self):
         """
@@ -225,4 +232,8 @@ class RPi_AS3935:
 
         This method should rarely be called directly.
         """
-        self.registers = self.i2cbus.read_i2c_block_data(self.address, 0x00)
+        if enable_pi_emulator:
+            self.registers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        else:
+            # noinspection PyAttributeOutsideInit
+            self.registers = self.i2cbus.read_i2c_block_data(self.address, 0x00)

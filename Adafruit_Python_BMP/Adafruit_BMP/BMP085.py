@@ -57,8 +57,8 @@ class BMP085(object):
         # Check that mode is valid.
         if mode not in [BMP085_ULTRALOWPOWER, BMP085_STANDARD, BMP085_HIGHRES, BMP085_ULTRAHIGHRES]:
             raise ValueError(
-                'Unexpected mode value {0}.  Set mode to one of BMP085_ULTRALOWPOWER, BMP085_STANDARD, BMP085_HIGHRES, or BMP085_ULTRAHIGHRES'.format(
-                    mode))
+                'Unexpected mode value {0}.  Set mode to one of BMP085_ULTRALOWPOWER, '
+                'BMP085_STANDARD, BMP085_HIGHRES, or BMP085_ULTRAHIGHRES'.format(mode))
         self._mode = mode
         # Create I2C device.
         if i2c is None:
@@ -181,7 +181,7 @@ class BMP085(object):
         X1 = (p >> 8) * (p >> 8)
         X1 = (X1 * 3038) >> 16
         X2 = (-7357 * p) >> 16
-        p = p + ((X1 + X2 + 3791) >> 4)
+        p += (X1 + X2 + 3791) >> 4
         self._logger.debug('Pressure {0} Pa'.format(p))
         return p
 

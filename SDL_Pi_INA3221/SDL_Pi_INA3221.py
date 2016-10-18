@@ -7,69 +7,73 @@
 
 # encoding: utf-8
 
-from datetime import datetime
-
-import smbus
+enable_pi_emulator = False
+try:
+    # noinspection PyUnresolvedReferences
+    import smbus
+except ImportError:
+    enable_pi_emulator = True
 
 # constants
 
-# /*=========================================================================
+# =========================================================================
 #    I2C ADDRESS/BITS
-#    -----------------------------------------------------------------------*/
-INA3221_ADDRESS = (0x40)  # 1000000 (A0+A1=GND)
-INA3221_READ = (0x01)
-# /*=========================================================================*/
+# =========================================================================
+INA3221_ADDRESS = 0x40  # 1000000 (A0+A1=GND)
+INA3221_READ = 0x01
+# =========================================================================
 
-# /*=========================================================================
+# =========================================================================
 #    CONFIG REGISTER (R/W)
-#    -----------------------------------------------------------------------*/
-INA3221_REG_CONFIG = (0x00)
-#    /*---------------------------------------------------------------------*/
-INA3221_CONFIG_RESET = (0x8000)  # Reset Bit
+# =========================================================================
+INA3221_REG_CONFIG = 0x00
 
-INA3221_CONFIG_ENABLE_CHAN1 = (0x4000)  # Enable Channel 1
-INA3221_CONFIG_ENABLE_CHAN2 = (0x2000)  # Enable Channel 2
-INA3221_CONFIG_ENABLE_CHAN3 = (0x1000)  # Enable Channel 3
+INA3221_CONFIG_RESET = 0x8000  # Reset Bit
 
-INA3221_CONFIG_AVG2 = (0x0800)  # AVG Samples Bit 2 - See table 3 spec
-INA3221_CONFIG_AVG1 = (0x0400)  # AVG Samples Bit 1 - See table 3 spec
-INA3221_CONFIG_AVG0 = (0x0200)  # AVG Samples Bit 0 - See table 3 spec
+INA3221_CONFIG_ENABLE_CHAN1 = 0x4000  # Enable Channel 1
+INA3221_CONFIG_ENABLE_CHAN2 = 0x2000  # Enable Channel 2
+INA3221_CONFIG_ENABLE_CHAN3 = 0x1000  # Enable Channel 3
 
-INA3221_CONFIG_VBUS_CT2 = (0x0100)  # VBUS bit 2 Conversion time - See table 4 spec
-INA3221_CONFIG_VBUS_CT1 = (0x0080)  # VBUS bit 1 Conversion time - See table 4 spec
-INA3221_CONFIG_VBUS_CT0 = (0x0040)  # VBUS bit 0 Conversion time - See table 4 spec
+INA3221_CONFIG_AVG2 = 0x0800  # AVG Samples Bit 2 - See table 3 spec
+INA3221_CONFIG_AVG1 = 0x0400  # AVG Samples Bit 1 - See table 3 spec
+INA3221_CONFIG_AVG0 = 0x0200  # AVG Samples Bit 0 - See table 3 spec
 
-INA3221_CONFIG_VSH_CT2 = (0x0020)  # Vshunt bit 2 Conversion time - See table 5 spec
-INA3221_CONFIG_VSH_CT1 = (0x0010)  # Vshunt bit 1 Conversion time - See table 5 spec
-INA3221_CONFIG_VSH_CT0 = (0x0008)  # Vshunt bit 0 Conversion time - See table 5 spec
+INA3221_CONFIG_VBUS_CT2 = 0x0100  # VBUS bit 2 Conversion time - See table 4 spec
+INA3221_CONFIG_VBUS_CT1 = 0x0080  # VBUS bit 1 Conversion time - See table 4 spec
+INA3221_CONFIG_VBUS_CT0 = 0x0040  # VBUS bit 0 Conversion time - See table 4 spec
 
-INA3221_CONFIG_MODE_2 = (0x0004)  # Operating Mode bit 2 - See table 6 spec
-INA3221_CONFIG_MODE_1 = (0x0002)  # Operating Mode bit 1 - See table 6 spec
-INA3221_CONFIG_MODE_0 = (0x0001)  # Operating Mode bit 0 - See table 6 spec
+INA3221_CONFIG_VSH_CT2 = 0x0020  # Vshunt bit 2 Conversion time - See table 5 spec
+INA3221_CONFIG_VSH_CT1 = 0x0010  # Vshunt bit 1 Conversion time - See table 5 spec
+INA3221_CONFIG_VSH_CT0 = 0x0008  # Vshunt bit 0 Conversion time - See table 5 spec
 
-# /*=========================================================================*/
+INA3221_CONFIG_MODE_2 = 0x0004  # Operating Mode bit 2 - See table 6 spec
+INA3221_CONFIG_MODE_1 = 0x0002  # Operating Mode bit 1 - See table 6 spec
+INA3221_CONFIG_MODE_0 = 0x0001  # Operating Mode bit 0 - See table 6 spec
 
-# /*=========================================================================
+# =========================================================================
+
+# =========================================================================
 #    SHUNT VOLTAGE REGISTER (R)
-#    -----------------------------------------------------------------------*/
-INA3221_REG_SHUNTVOLTAGE_1 = (0x01)
-# /*=========================================================================*/
+# =========================================================================
+INA3221_REG_SHUNT_VOLTAGE_1 = 0x01
+# =========================================================================
 
-# /*=========================================================================
+# =========================================================================
 #    BUS VOLTAGE REGISTER (R)
-#    -----------------------------------------------------------------------*/
-INA3221_REG_BUSVOLTAGE_1 = (0x02)
-# /*=========================================================================*/
+# =========================================================================
+INA3221_REG_BUS_VOLTAGE_1 = 0x02
+# =========================================================================
 
-SHUNT_RESISTOR_VALUE = (0.1)  # default shunt resistor value of 0.1 Ohm
+SHUNT_RESISTOR_VALUE = 0.1  # default shunt resistor value of 0.1 Ohm
 
 
-class SDL_Pi_INA3221():
-    ###########################
+class SDL_Pi_INA3221:
+    # =========================================================================
     # INA3221 Code
-    ###########################
+    # =========================================================================
     def __init__(self, twi=1, addr=INA3221_ADDRESS, shunt_resistor=SHUNT_RESISTOR_VALUE):
-        self._bus = smbus.SMBus(twi)
+        if not enable_pi_emulator:
+            self._bus = smbus.SMBus(twi)
         self._addr = addr
         config = INA3221_CONFIG_ENABLE_CHAN1 | \
                  INA3221_CONFIG_ENABLE_CHAN2 | \
@@ -85,40 +89,42 @@ class SDL_Pi_INA3221():
 
     def _write(self, register, data):
         # print "addr =0x%x register = 0x%x data = 0x%x " % (self._addr, register, data)
-        self._bus.write_byte_data(self._addr, register, data)
+        if not enable_pi_emulator:
+            self._bus.write_byte_data(self._addr, register, data)
 
     def _read(self, data):
-
-        returndata = self._bus.read_byte_data(self._addr, data)
-        # print "addr = 0x%x data = 0x%x %i returndata = 0x%x " % (self._addr, data, data, returndata)
-        return returndata
+        return_data = [0]
+        if not enable_pi_emulator:
+            return_data = self._bus.read_byte_data(self._addr, data)
+        # print "addr = 0x%x data = 0x%x %i return_data = 0x%x " % (self._addr, data, data, return_data)
+        return return_data
 
     def _read_register_little_endian(self, register):
-
-        result = self._bus.read_word_data(self._addr, register) & 0xFFFF
+        result = 0
+        if not enable_pi_emulator:
+            result = self._bus.read_word_data(self._addr, register) & 0xFFFF
         lowbyte = (result & 0xFF00) >> 8
         highbyte = (result & 0x00FF) << 8
         switchresult = lowbyte + highbyte
-        # print "Read 16 bit Word addr =0x%x register = 0x%x switchresult = 0x%x " % (self._addr, register, switchresult)
+        # print "Read 16 bit Word addr =0x%x register = 0x%x switchresult = 0x%x " %
+        # (self._addr, register, switchresult)
         return switchresult
 
     def _write_register_little_endian(self, register, data):
-
-        data = data & 0xFFFF
+        data &= 0xFFFF
         # reverse configure byte for little endian
-        lowbyte = data >> 8
-        highbyte = (data & 0x00FF) << 8
-        switchdata = lowbyte + highbyte
-        self._bus.write_word_data(self._addr, register, switchdata)
+        low_byte = data >> 8
+        high_byte = (data & 0x00FF) << 8
+        switch_data = low_byte + high_byte
+        if not enable_pi_emulator:
+            self._bus.write_word_data(self._addr, register, switch_data)
 
     # print "Write  16 bit Word addr =0x%x register = 0x%x data = 0x%x " % (self._addr, register, data)
-
-
 
     def _getBusVoltage_raw(self, channel):
         # Gets the raw bus voltage (16-bit signed integer, so +-32767)
 
-        value = self._read_register_little_endian(INA3221_REG_BUSVOLTAGE_1 + (channel - 1) * 2)
+        value = self._read_register_little_endian(INA3221_REG_BUS_VOLTAGE_1 + (channel - 1) * 2)
         if value > 32767:
             value -= 65536
         return value
@@ -126,7 +132,7 @@ class SDL_Pi_INA3221():
     def _getShuntVoltage_raw(self, channel):
         # Gets the raw shunt voltage (16-bit signed integer, so +-32767)
 
-        value = self._read_register_little_endian(INA3221_REG_SHUNTVOLTAGE_1 + (channel - 1) * 2)
+        value = self._read_register_little_endian(INA3221_REG_SHUNT_VOLTAGE_1 + (channel - 1) * 2)
         if value > 32767:
             value -= 65536
         return value

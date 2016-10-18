@@ -5,8 +5,7 @@
 # V 1.2
 # only works in 24 hour mode
 # now includes reading and writing the AT24C32 included on the SwitchDoc Labs 
-#	DS3231 / AT24C32 Module (www.switchdoc.com
-
+# DS3231 / AT24C32 Module (www.switchdoc.com)
 
 # encoding: utf-8
 
@@ -33,7 +32,13 @@
 from datetime import datetime
 
 import time
-import smbus
+
+enable_pi_emulator = False
+try:
+    # noinspection PyUnresolvedReferences
+    import smbus
+except ImportError:
+    enable_pi_emulator = True
 
 
 def _bcd_to_int(bcd):
@@ -62,7 +67,7 @@ def _int_to_bcd(n):
     return bcd >> 1
 
 
-class SDL_DS3231():
+class SDL_DS3231:
     _REG_SECONDS = 0x00
     _REG_MINUTES = 0x01
     _REG_HOURS = 0x02
@@ -76,7 +81,8 @@ class SDL_DS3231():
     # DS3231 Code
     ###########################
     def __init__(self, twi=1, addr=0x68, at24c32_addr=0x57):
-        self._bus = smbus.SMBus(twi)
+        if not enable_pi_emulator:
+            self._bus = smbus.SMBus(twi)
         self._addr = addr
         self._at24c32_addr = at24c32_addr
 
@@ -86,9 +92,12 @@ class SDL_DS3231():
 
     def _read(self, data):
 
-        returndata = self._bus.read_byte_data(self._addr, data)
-        # print "addr = 0x%x data = 0x%x %i returndata = 0x%x %i " % (self._addr, data, data, returndata, _bcd_to_int(returndata))
-        return returndata
+        return_data = 0
+        if not enable_pi_emulator:
+            return_data = self._bus.read_byte_data(self._addr, data)
+        # print "addr = 0x%x data = 0x%x %i return_data = 0x%x %i " % (self._addr, data, data,
+        # return_data, _bcd_to_int(return_data))
+        return return_data
 
     def _read_seconds(self):
         return _bcd_to_int(self._read(self._REG_SECONDS) & 0x7F)  # wipe out the oscillator on bit
@@ -98,7 +107,7 @@ class SDL_DS3231():
 
     def _read_hours(self):
         d = self._read(self._REG_HOURS)
-        if (d == 0x64):
+        if d == 0x64:
             d = 0x40
         return _bcd_to_int(d & 0x3F)
 
@@ -136,6 +145,7 @@ class SDL_DS3231():
                         self._read_month(), self._read_date(), self._read_hours(),
                         self._read_minutes(), self._read_seconds(), 0, tzinfo=tzinfo)
 
+    # noinspection PyUnusedLocal
     def write_all(self, seconds=None, minutes=None, hours=None, day=None,
                   date=None, month=None, year=None, save_as_24h=True):
         """Direct write un-none value.
@@ -190,8 +200,11 @@ class SDL_DS3231():
         self.write_datetime(datetime.now())
 
     def getTemp(self):
-        byte_tmsb = self._bus.read_byte_data(self._addr, 0x11)
-        byte_tlsb = bin(self._bus.read_byte_data(self._addr, 0x12))[2:].zfill(8)
+        byte_tmsb = [0]
+        byte_tlsb = [0, 0]
+        if not enable_pi_emulator:
+            byte_tmsb = self._bus.read_byte_data(self._addr, 0x11)
+            byte_tlsb = bin(self._bus.read_byte_data(self._addr, 0x12))[2:].zfill(8)
         return byte_tmsb + int(byte_tlsb[0]) * 2 ** (-1) + int(byte_tlsb[1]) * 2 ** (-2)
 
     ###########################
@@ -199,21 +212,26 @@ class SDL_DS3231():
     ###########################
 
     def set_current_AT24C32_address(self, address):
-        a1 = address / 256;
-        a0 = address % 256;
-        self._bus.write_i2c_block_data(self._at24c32_addr, a1, [a0])
+        a1 = address / 256
+        a0 = address % 256
+        if not enable_pi_emulator:
+            self._bus.write_i2c_block_data(self._at24c32_addr, a1, [a0])
 
     def read_AT24C32_byte(self, address):
         # print "i2c_address =0x%x eepromaddress = 0x%x  " % (self._at24c32_addr, address)
 
         self.set_current_AT24C32_address(address)
-        return self._bus.read_byte(self._at24c32_addr)
+        response = 0
+        if not enable_pi_emulator:
+            response = self._bus.read_byte(self._at24c32_addr)
+
+        return response
 
     def write_AT24C32_byte(self, address, value):
         # print "i2c_address =0x%x eepromaddress = 0x%x value = 0x%x %i " % (self._at24c32_addr, address, value, value)
 
-
-        a1 = address / 256;
-        a0 = address % 256;
-        self._bus.write_i2c_block_data(self._at24c32_addr, a1, [a0, value])
+        a1 = address / 256
+        a0 = address % 256
+        if not enable_pi_emulator:
+            self._bus.write_i2c_block_data(self._at24c32_addr, a1, [a0, value])
         time.sleep(0.20)
