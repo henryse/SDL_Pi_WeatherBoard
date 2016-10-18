@@ -61,7 +61,7 @@ def voltageToDegrees(value, defaultWindDirection):
     # Typically only recieve 8 positions.  And 315 degrees was wrong.
 
     # For 5V, use 1.0.  For 3.3V use 0.66
-    ADJUST3OR5 = 1.0
+    ADJUST3OR5 = 0.66
 
     if fuzzyCompare(3.84 * ADJUST3OR5, value):
         return 0.0
