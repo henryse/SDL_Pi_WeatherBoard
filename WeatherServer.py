@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-#
-# Weather Board Test File
-# Version 1.8 August 22, 2016
-#
-# SwitchDoc Labs
-# www.switchdoc.com
-#
-#
 
 # =========================================================================
 #  System Imports....
@@ -21,72 +13,79 @@ import struct
 import subprocess
 
 # =========================================================================
-#  Application imports
+#   Application imports
 # =========================================================================
 
 import config
 
 # =========================================================================
-#  Raspberry PI imports
+#   Raspberry PI imports
 # =========================================================================
 
-import RPi.GPIO as GPIO
-import smbus
+enable_pi_emulator = False
 
-sys.path.append('./SDL_Pi_SSD1306')
-sys.path.append('./SDL_Pi_INA3221')
-sys.path.append('./RTC_SDL_DS3231')
-sys.path.append('./Adafruit_Python_BMP')
-sys.path.append('./Adafruit_Python_GPIO')
-sys.path.append('./Adafruit_Python_SSD1306')
-sys.path.append('./SDL_Pi_WeatherRack')
-sys.path.append('./SDL_Pi_FRAM')
-sys.path.append('./SDL_Pi_TCA9545')
-sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
+try:
+    import RPi.GPIO as GPIO
+    import smbus
 
-import SDL_DS3231
-import Adafruit_BMP.BMP280 as BMP280
-import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
-import SDL_Pi_FRAM
-from RPi_AS3935 import RPi_AS3935
-import SDL_Pi_INA3221
-import SDL_Pi_TCA9545
-import Adafruit_SSD1306
-import Scroll_SSD1306
+    sys.path.append('./SDL_Pi_SSD1306')
+    sys.path.append('./SDL_Pi_INA3221')
+    sys.path.append('./RTC_SDL_DS3231')
+    sys.path.append('./Adafruit_Python_BMP')
+    sys.path.append('./Adafruit_Python_GPIO')
+    sys.path.append('./Adafruit_Python_SSD1306')
+    sys.path.append('./SDL_Pi_WeatherRack')
+    sys.path.append('./SDL_Pi_FRAM')
+    sys.path.append('./SDL_Pi_TCA9545')
+    sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
 
-# /*=========================================================================
-#    I2C ADDRESS/BITS
-#    -----------------------------------------------------------------------*/
+    import SDL_DS3231
+    import Adafruit_BMP.BMP280 as BMP280
+    import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
+    import SDL_Pi_FRAM
+    from RPi_AS3935 import RPi_AS3935
+    import SDL_Pi_INA3221
+    import SDL_Pi_TCA9545
+    import Adafruit_SSD1306
+    import Scroll_SSD1306
+except ImportError:
+    enable_pi_emulator = True
+
+# =========================================================================
+#   I2C ADDRESS/BITS
+# =========================================================================
+
 TCA9545_ADDRESS = 0x73  # 1110011 (A0+A1=VDD)
-# /*=========================================================================*/
 
-# /*=========================================================================
-#    CONFIG REGISTER (R/W)
-#    -----------------------------------------------------------------------*/
+# =========================================================================
+
+# =========================================================================
+#   CONFIG REGISTER (R/W)
+# =========================================================================
+
 TCA9545_REG_CONFIG = 0x00
-#    /*---------------------------------------------------------------------*/
+
+# =========================================================================
 
 TCA9545_CONFIG_BUS0 = 0x01  # 1 = enable, 0 = disable
 TCA9545_CONFIG_BUS1 = 0x02  # 1 = enable, 0 = disable
 TCA9545_CONFIG_BUS2 = 0x04  # 1 = enable, 0 = disable
 TCA9545_CONFIG_BUS3 = 0x08  # 1 = enable, 0 = disable
 
-# /*=========================================================================*/
+# =========================================================================
 
-
-################
-# Device Present State Variables
-###############
+# =========================================================================
+#   Device Present State Variables
+# =========================================================================
 
 # indicate interrupt has happened from as3936
-
 as3935_Interrupt_Happened = False
+
 # set to true if you are building the Weather Board project with Lightning Sensor
 config.Lightning_Mode = False
 
 # set to true if you are building the solar powered version
 config.SolarPower_Mode = False
-
 config.SunAirPlus_Present = False
 config.AS3935_Present = False
 config.DS3231_Present = False
@@ -99,9 +98,9 @@ config.ADS1115_Present = False
 config.OLED_Present = False
 config.WXLink_Present = False
 
-###############
-# setup lightning i2c mux
-##############
+# =========================================================================
+#   Setup lightning i2c mux
+# =========================================================================
 
 # points to BUS0 initially - That is where the Weather Board is located
 if config.Lightning_Mode:
@@ -125,8 +124,8 @@ def returnStatusLine(device, state):
 # GPIO Numbering Mode GPIO.BCM
 #
 
-anemometerPin = 23
-rainPin = 24
+anemometerPin = 26
+rainPin = 21
 
 # constants
 
@@ -204,7 +203,7 @@ except IOError as e:
 
 ################
 
-# HTU21DF Detection 
+# HTU21DF Detection
 try:
     HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
     config.HTU21DF_Present = True
@@ -283,7 +282,7 @@ def respond_to_as3935_interrupt():
         distance = as3935.get_distance()
         as3935LastDistance = distance
         as3935LastStatus = "Lightning Detected " + str(distance) + "km away. (%s)" % now
-    # switch back to BUS0 
+    # switch back to BUS0
     tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
 
@@ -301,10 +300,10 @@ if config.Lightning_Mode:
 
 ###############
 
-# Set up FRAM 
+# Set up FRAM
 
 fram = SDL_Pi_FRAM.SDL_Pi_FRAM(addr=0x50)
-# FRAM Detection 
+# FRAM Detection
 try:
     fram.read8(0)
     config.FRAM_Present = True
@@ -336,7 +335,7 @@ if config.SolarPower_Mode:
 
 ###############
 
-# Detect AM2315 
+# Detect AM2315
 try:
     from tentacle_pi.AM2315 import AM2315
 
@@ -366,7 +365,7 @@ def hex2int(s):
 
 
 # Main Loop - sleeps 10 seconds
-# Tests all I2C and WeatherRack devices on Weather Board 
+# Tests all I2C and WeatherRack devices on Weather Board
 
 
 # Main Program
