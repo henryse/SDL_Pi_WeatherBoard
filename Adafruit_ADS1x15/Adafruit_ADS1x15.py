@@ -153,8 +153,8 @@ class ADS1x15:
 
         # return raw AD Value
         # With invalid channel return -1
-        if (channel > 3):
-            if (self.debug):
+        if channel > 3:
+            if self.debug:
                 print "ADS1x15: Invalid channel specified: %d" % channel
             return -1
 

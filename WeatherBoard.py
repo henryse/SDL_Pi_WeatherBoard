@@ -125,8 +125,8 @@ def returnStatusLine(device, state):
 # GPIO Numbering Mode GPIO.BCM
 #
 
-anemometerPin = 23
-rainPin = 24
+anemometerPin = 21
+rainPin = 20
 
 # constants
 

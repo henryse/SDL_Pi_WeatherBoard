@@ -187,7 +187,7 @@ class SDL_Pi_WeatherRack:
                 config.ADS1115_Present = False
                 # check again (1 out 16 chance of zero)
                 value = self.ads1015.readRaw(0, self.gain, self.sps)  # AIN1 wired to wind vane on WeatherPiArduino
-                if ((0x0F & value) == 0):
+                if (0x0F & value) == 0:
                     config.ADS1015_Present = True
                     config.ADS1115_Present = False
 
