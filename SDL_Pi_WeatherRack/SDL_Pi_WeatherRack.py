@@ -201,8 +201,8 @@ class SDL_Pi_WeatherRack:
                 if not enable_pi_emulator:
                     self.ads1015 = ADS1x15(ic=ADS1115, address=0x48)
 
-        except TypeError as e:
-            print "Type Error: " % e.message
+        except TypeError as err:
+            print err.message
             config.ADS1015_Present = False
             config.ADS1115_Present = False
 
