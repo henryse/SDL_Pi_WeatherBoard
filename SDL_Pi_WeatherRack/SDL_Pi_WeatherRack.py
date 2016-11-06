@@ -203,13 +203,7 @@ class SDL_Pi_WeatherRack:
                     self.ads1015 = ADS1x15(ic=ADS1115, address=0x48)
 
         except TypeError as e:
-            # in Python 2, stderr is also unbuffered
-            print >> sys.stderr, traceback.format_exc()
-            # in Python 2, you can also from __future__ import print_function
-            # print(traceback.format_exc(), file = sys.stderr)
-            # or as the top answer here demonstrates, use:
             traceback.print_exc()
-            # which also uses stderr.
             print e.message
             config.ADS1015_Present = False
             config.ADS1115_Present = False
