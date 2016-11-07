@@ -412,7 +412,7 @@ while True:
         print "DS3231 Temperature= \t%0.2f C" % ds3231.getTemp()
         print "----------------- "
 
-        response['DS3231'] = {'raspberry_pi': time.strftime("%Y-%m-%d %H:%M:%S"), 'time': ds3231.read_datetime(),
+        response['DS3231'] = {'raspberry_pi': time.strftime("%Y-%m-%d %H:%M:%S"), 'time': "%s" % ds3231.read_datetime(),
                               'temperature': ds3231.getTemp()}
 
     print "----------------- "
