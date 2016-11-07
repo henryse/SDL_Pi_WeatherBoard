@@ -91,11 +91,9 @@ config.SunAirPlus_Present = False
 config.AS3935_Present = False
 config.DS3231_Present = False
 config.BMP280_Present = False
-config.FRAM_Present = False
 config.AM2315_Present = False
 config.ADS1015_Present = False
 config.ADS1115_Present = False
-config.WXLink_Present = False
 
 
 ###############
@@ -136,19 +134,6 @@ weatherStation = SDL_Pi_WeatherRack.SDL_Pi_WeatherRack(anemometerPin, rainPin, S
 
 weatherStation.setWindMode(SDL_MODE_SAMPLE, 5.0)
 # weatherStation.setWindMode(SDL_MODE_DELAY, 5.0)
-
-################
-
-# WXLink Test Setup
-
-WXLink = smbus.SMBus(1)
-try:
-    data = WXLink.read_i2c_block_data(0x08, 0)
-    config.WXLink_Present = True
-except:
-    config.WXLink_Present = False
-
-################
 
 # DS3231/AT24C32 Setup
 filename = time.strftime("%Y-%m-%d%H:%M:%SRTCTest") + ".txt"
@@ -204,38 +189,6 @@ def get_weather_data():
 
     ###############
 
-    # Set up FRAM
-
-    fram = SDL_Pi_FRAM.SDL_Pi_FRAM(addr=0x50)
-    # FRAM Detection
-    try:
-        fram.read8(0)
-        config.FRAM_Present = True
-    except:
-        config.FRAM_Present = False
-
-    ###############
-
-    if config.SolarPower_Mode:
-        print "ARE WE HERE!!!!!"
-        try:
-            # switch to BUS2 -  SunAirPlus is on Bus2
-            tca9545.write_control_register(TCA9545_CONFIG_BUS2)
-            sunAirPlus = SDL_Pi_INA3221.SDL_Pi_INA3221(addr=0x40)
-            # the three channels of the INA3221 named for SunAirPlus Solar Power Controller channels (www.switchdoc.com)
-            LIPO_BATTERY_CHANNEL = 1
-            SOLAR_CELL_CHANNEL = 2
-            OUTPUT_CHANNEL = 3
-
-            bus_voltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
-            config.SunAirPlus_Present = True
-        except:
-            config.SunAirPlus_Present = False
-
-        tca9545.write_control_register(TCA9545_CONFIG_BUS0)
-
-    ###############
-
     # Detect AM2315
     try:
         from tentacle_pi.AM2315 import AM2315
@@ -245,7 +198,7 @@ def get_weather_data():
             temperature, humidity, crc_check = am2315.sense()
             print "AM2315 =", temperature
             config.AM2315_Present = True
-            if (crc_check == -1):
+            if crc_check == -1:
                 config.AM2315_Present = False
         except:
             config.AM2315_Present = False
@@ -278,14 +231,10 @@ def get_weather_data():
     print "----------------------"
     print returnStatusLine("DS3231", config.DS3231_Present)
     print returnStatusLine("BMP280", config.BMP280_Present)
-    print returnStatusLine("FRAM", config.FRAM_Present)
     print returnStatusLine("AM2315", config.AM2315_Present)
     print returnStatusLine("ADS1015", config.ADS1015_Present)
     print returnStatusLine("ADS1115", config.ADS1115_Present)
     print returnStatusLine("AS3935", config.AS3935_Present)
-    # noinspection PyUnresolvedReferences
-    print returnStatusLine("SunAirPlus", config.SunAirPlus_Present)
-    print returnStatusLine("WXLink", config.WXLink_Present)
     print "----------------------"
 
     block1 = ""
@@ -316,14 +265,6 @@ def get_weather_data():
 
         response['DS3231'] = {'raspberry_pi': time.strftime("%Y-%m-%d %H:%M:%S"), 'time': "%s" % ds3231.read_datetime(),
                               'temperature': ds3231.getTemp()}
-
-    print "----------------- "
-    print " WeatherRack Weather Sensors"
-    if config.WXLink_Present:
-        print " WXLink Remote WeatherRack"
-    else:
-        print " WeatherRack Local"
-    print "----------------- "
     #
     print "----------------- "
     if config.AM2315_Present:
@@ -344,85 +285,22 @@ def get_weather_data():
     print "----------------- "
     print "----------------- "
 
-    if not config.WXLink_Present:
+    currentWindSpeed = weatherStation.current_wind_speed() / 1.6
+    currentWindGust = weatherStation.get_wind_gust() / 1.6
+    totalRain += weatherStation.get_current_rain_total() / 25.4
+    print "Rain Total=\t%0.2f in" % totalRain
+    print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
+    # noinspection PyUnresolvedReferences
 
-        currentWindSpeed = weatherStation.current_wind_speed() / 1.6
-        currentWindGust = weatherStation.get_wind_gust() / 1.6
-        totalRain += weatherStation.get_current_rain_total() / 25.4
-        print "Rain Total=\t%0.2f in" % totalRain
-        print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
-        # noinspection PyUnresolvedReferences
+    print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
 
-        print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
+    if config.ADS1015_Present or config.ADS1115_Present:
+        print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
+        print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
 
-        if config.ADS1015_Present or config.ADS1115_Present:
-            print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
-            print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
-
-        response['weather_rack'] = {'rain_total': "%0.2f" % totalRain, 'wind_speed': "%0.2f" % currentWindSpeed,
-                                    'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
-                                    'wind_voltage': "%0.3f" % weatherStation.current_wind_direction_voltage()}
-
-    if config.WXLink_Present:
-        old_block1 = block1
-        old_block2 = block2
-        try:
-            print "-----------"
-            print "block 1"
-            block1 = WXLink.read_i2c_block_data(0x08, 0)
-            print ''.join('{:02x}'.format(x) for x in block1)
-            block1 = bytearray(block1)
-            print "block 2"
-            block2 = WXLink.read_i2c_block_data(0x08, 1)
-            block2 = bytearray(block2)
-            print ''.join('{:02x}'.format(x) for x in block2)
-            print "-----------"
-        except:
-            print "WXLink Read failed - Old Data Kept"
-            block1 = old_block1
-            block2 = old_block2
-
-        currentWindSpeed = struct.unpack('f', str(block1[9:13]))[0] / 1.6
-
-        currentWindGust = 0.0  # not implemented in Solar WXLink version
-
-        totalRain = struct.unpack('l', str(block1[17:21]))[0] / 25.4
-
-        print "Rain Total=\t%0.2f in" % totalRain
-        print "Wind Speed=\t%0.2f MPH" % currentWindSpeed
-        # noinspection PyUnresolvedReferences
-
-        currentWindDirection = struct.unpack('H', str(block1[7:9]))[0]
-        print "Wind Direction=\t\t\t %i Degrees" % currentWindDirection
-
-        # now do the AM2315 Temperature
-        temperature = struct.unpack('f', str(block1[25:29]))[0]
-        elements = [block1[29], block1[30], block1[31], block2[0]]
-        outHByte = bytearray(elements)
-        humidity = struct.unpack('f', str(outHByte))[0]
-        print "AM2315 from WXLink temperature: %0.1f" % temperature
-        print "AM2315 from WXLink humidity: %0.1f" % humidity
-
-        # now read the SunAirPlus Data from WXLink
-
-        batteryVoltage = struct.unpack('f', str(block2[1:5]))[0]
-        batteryCurrent = struct.unpack('f', str(block2[5:9]))[0]
-        loadCurrent = struct.unpack('f', str(block2[9:13]))[0]
-        solarPanelVoltage = struct.unpack('f', str(block2[13:17]))[0]
-        solarPanelCurrent = struct.unpack('f', str(block2[17:21]))[0]
-
-        auxA = struct.unpack('f', str(block2[21:25]))[0]
-
-        print "WXLink batteryVoltage = %6.2f" % batteryVoltage
-        print "WXLink batteryCurrent = %6.2f" % batteryCurrent
-        print "WXLink loadCurrent = %6.2f" % loadCurrent
-        print "WXLink solarPanelVoltage = %6.2f" % solarPanelVoltage
-        print "WXLink solarPanelCurrent = %6.2f" % solarPanelCurrent
-        print "WXLink auxA = %6.2f" % auxA
-
-        # message ID
-        MessageID = struct.unpack('l', str(block2[25:29]))[0]
-        print "WXLink Message ID %i" % MessageID
+    response['weather_rack'] = {'rain_total': "%0.2f" % totalRain, 'wind_speed': "%0.2f" % currentWindSpeed,
+                                'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
+                                'wind_voltage': "%0.3f" % weatherStation.current_wind_direction_voltage()}
 
     print "----------------- "
     print "----------------- "
