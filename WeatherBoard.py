@@ -85,8 +85,6 @@ TCA9545_CONFIG_BUS3 = 0x08  # 1 = enable, 0 = disable
 # indicate interrupt has happened from as3936
 
 as3935_Interrupt_Happened = False
-# set to true if you are building the Weather Board project with Lightning Sensor
-config.Lightning_Mode = False
 
 # set to true if you are building the solar powered version
 config.SolarPower_Mode = False
@@ -102,14 +100,10 @@ config.ADS1015_Present = False
 config.ADS1115_Present = False
 config.WXLink_Present = False
 
+
 ###############
 # setup lightning i2c mux
 ##############
-
-# points to BUS0 initially - That is where the Weather Board is located
-if config.Lightning_Mode:
-    tca9545 = SDL_Pi_TCA9545.SDL_Pi_TCA9545(addr=TCA9545_ADDRESS, bus_enable=TCA9545_CONFIG_BUS0)
-
 
 def returnStatusLine(device, state):
     return_string = device
@@ -214,43 +208,8 @@ try:
 except:
     config.HTU21DF_Present = False
 
+
 ################
-
-# ad3935 Set up Lightning Detector
-if config.Lightning_Mode:
-    # switch to BUS1 - lightning detector is on Bus1
-    # noinspection PyUnboundLocalVariable
-    tca9545.write_control_register(TCA9545_CONFIG_BUS1)
-
-    as3935 = RPi_AS3935(address=0x03, bus=1)
-
-    try:
-
-        as3935.set_indoors(True)
-        config.AS3935_Present = True
-        print "as3935 present"
-
-    except IOError as e:
-
-        #    print "I/O error({0}): {1}".format(e.errno, e.strerror)
-        config.AS3935_Present = False
-        # back to BUS0
-        tca9545.write_control_register(TCA9545_CONFIG_BUS0)
-
-    if config.AS3935_Present:
-        i2c_command = "sudo i2cdetect -y 1"
-        output = subprocess.check_output(i2c_command, shell=True, stderr=subprocess.STDOUT)
-        print output
-        as3935.set_noise_floor(0)
-        as3935.calibrate(tun_cap=0x0F)
-
-    as3935LastInterrupt = 0
-    as3935LightningCount = 0
-    as3935LastDistance = 0
-    as3935LastStatus = ""
-    # back to BUS0
-    tca9545.write_control_register(TCA9545_CONFIG_BUS0)
-
 
 def respond_to_as3935_interrupt():
     # switch to BUS1 - lightning detector is on Bus1
@@ -275,121 +234,100 @@ def respond_to_as3935_interrupt():
     tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
 
-# GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
+def get_weather_data():
+    # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
 
-if config.Lightning_Mode:
-    as3935pin = 13
+    ###############
 
-    if config.AS3935_Present:
-        GPIO.setup(as3935pin, GPIO.IN)
-        GPIO.add_event_detect(as3935pin, GPIO.RISING)
-        # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
+    # Set up FRAM
 
-###############
-
-# Set up FRAM
-
-fram = SDL_Pi_FRAM.SDL_Pi_FRAM(addr=0x50)
-# FRAM Detection
-try:
-    fram.read8(0)
-    config.FRAM_Present = True
-except:
-    config.FRAM_Present = False
-
-###############
-
-# set up SunAirPlus
-
-
-if config.SolarPower_Mode:
-
+    fram = SDL_Pi_FRAM.SDL_Pi_FRAM(addr=0x50)
+    # FRAM Detection
     try:
-        # switch to BUS2 -  SunAirPlus is on Bus2
-        tca9545.write_control_register(TCA9545_CONFIG_BUS2)
-        sunAirPlus = SDL_Pi_INA3221.SDL_Pi_INA3221(addr=0x40)
-        # the three channels of the INA3221 named for SunAirPlus Solar Power Controller channels (www.switchdoc.com)
-        LIPO_BATTERY_CHANNEL = 1
-        SOLAR_CELL_CHANNEL = 2
-        OUTPUT_CHANNEL = 3
-
-        bus_voltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
-        config.SunAirPlus_Present = True
+        fram.read8(0)
+        config.FRAM_Present = True
     except:
-        config.SunAirPlus_Present = False
+        config.FRAM_Present = False
 
-    tca9545.write_control_register(TCA9545_CONFIG_BUS0)
+    ###############
 
-###############
+    if config.SolarPower_Mode:
 
-# Detect AM2315
-try:
-    from tentacle_pi.AM2315 import AM2315
+        try:
+            # switch to BUS2 -  SunAirPlus is on Bus2
+            tca9545.write_control_register(TCA9545_CONFIG_BUS2)
+            sunAirPlus = SDL_Pi_INA3221.SDL_Pi_INA3221(addr=0x40)
+            # the three channels of the INA3221 named for SunAirPlus Solar Power Controller channels (www.switchdoc.com)
+            LIPO_BATTERY_CHANNEL = 1
+            SOLAR_CELL_CHANNEL = 2
+            OUTPUT_CHANNEL = 3
 
+            bus_voltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
+            config.SunAirPlus_Present = True
+        except:
+            config.SunAirPlus_Present = False
+
+        tca9545.write_control_register(TCA9545_CONFIG_BUS0)
+
+    ###############
+
+    # Detect AM2315
     try:
-        am2315 = AM2315(0x5c, "/dev/i2c-1")
-        temperature, humidity, crc_check = am2315.sense()
-        print "AM2315 =", temperature
-        config.AM2315_Present = True
-        if (crc_check == -1):
+        from tentacle_pi.AM2315 import AM2315
+
+        try:
+            am2315 = AM2315(0x5c, "/dev/i2c-1")
+            temperature, humidity, crc_check = am2315.sense()
+            print "AM2315 =", temperature
+            config.AM2315_Present = True
+            if (crc_check == -1):
+                config.AM2315_Present = False
+        except:
             config.AM2315_Present = False
     except:
         config.AM2315_Present = False
-except:
-    config.AM2315_Present = False
-    print "------> See Readme to install tentacle_pi"
+        print "------> See Readme to install tentacle_pi"
 
+    ###########
+    # WXLink functions
 
-###########
-# WXLink functions
+    def hex2float(s):
+        return struct.unpack('<f', binascii.unhexlify(s))[0]
 
-def hex2float(s):
-    return struct.unpack('<f', binascii.unhexlify(s))[0]
+    def hex2int(s):
+        return struct.unpack('<L', binascii.unhexlify(s))[0]
 
+    # Main Loop - sleeps 10 seconds
+    # Tests all I2C and WeatherRack devices on Weather Board
+    # Main Program
 
-def hex2int(s):
-    return struct.unpack('<L', binascii.unhexlify(s))[0]
+    print ""
+    print "Weather Board Demo / Test Version 1.7 - SwitchDoc Labs"
+    print ""
+    print ""
+    print "Program Started at:" + time.strftime("%Y-%m-%d %H:%M:%S")
+    print ""
 
+    totalRain = 0
 
-# Main Loop - sleeps 10 seconds
-# Tests all I2C and WeatherRack devices on Weather Board
+    print "----------------------"
+    print returnStatusLine("DS3231", config.DS3231_Present)
+    print returnStatusLine("BMP280", config.BMP280_Present)
+    print returnStatusLine("FRAM", config.FRAM_Present)
+    print returnStatusLine("HTU21DF", config.HTU21DF_Present)
+    print returnStatusLine("AM2315", config.AM2315_Present)
+    print returnStatusLine("ADS1015", config.ADS1015_Present)
+    print returnStatusLine("ADS1115", config.ADS1115_Present)
+    print returnStatusLine("AS3935", config.AS3935_Present)
+    # noinspection PyUnresolvedReferences
+    print returnStatusLine("SunAirPlus", config.SunAirPlus_Present)
+    print returnStatusLine("WXLink", config.WXLink_Present)
+    print "----------------------"
 
+    block1 = ""
+    block2 = ""
 
-# Main Program
-
-print ""
-print "Weather Board Demo / Test Version 1.7 - SwitchDoc Labs"
-print ""
-print ""
-print "Program Started at:" + time.strftime("%Y-%m-%d %H:%M:%S")
-print ""
-
-totalRain = 0
-
-print "----------------------"
-print returnStatusLine("DS3231", config.DS3231_Present)
-print returnStatusLine("BMP280", config.BMP280_Present)
-print returnStatusLine("FRAM", config.FRAM_Present)
-print returnStatusLine("HTU21DF", config.HTU21DF_Present)
-print returnStatusLine("AM2315", config.AM2315_Present)
-print returnStatusLine("ADS1015", config.ADS1015_Present)
-print returnStatusLine("ADS1115", config.ADS1115_Present)
-print returnStatusLine("AS3935", config.AS3935_Present)
-# noinspection PyUnresolvedReferences
-print returnStatusLine("SunAirPlus", config.SunAirPlus_Present)
-print returnStatusLine("WXLink", config.WXLink_Present)
-print "----------------------"
-
-block1 = ""
-block2 = ""
-
-while True:
     response = {}
-
-    if config.Lightning_Mode:
-        # switch to BUS0
-        print "switch to Bus0"
-        tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
     print "---------------------------------------- "
     print "----------------- "
@@ -557,128 +495,15 @@ while True:
 
         htu_temperature = float(split_string[0])
         htu_humidity = float(split_string[1])
-        print "Temperature = \t%0.2f C" % htu_temperature
+        print "Temperature XXXX = \t%0.2f C" % htu_temperature
         print "Humidity = \t%0.2f %%" % htu_humidity
         # noinspection PyUnresolvedReferences
     print "----------------- "
 
-    print "----------------- "
-    if config.AS3935_Present:
-        print " AS3935 Lightning Detector"
-    else:
-        print " AS3935 Lightning Detector Not Present"
-    print "----------------- "
+    return response
 
-    if config.AS3935_Present:
-        # noinspection PyUnboundLocalVariable
-        if GPIO.event_detected(as3935pin):
-            respond_to_as3935_interrupt()
 
-        print "Last result from AS3935:"
-
-        if as3935LastInterrupt == 0x00:
-            print "----No Lightning detected---"
-
-        if as3935LastInterrupt == 0x01:
-            print "Noise Floor: %s" % as3935LastStatus
-            as3935LastInterrupt = 0x00
-
-        if as3935LastInterrupt == 0x04:
-            print "Disturber: %s" % as3935LastStatus
-            as3935LastInterrupt = 0x00
-
-        if as3935LastInterrupt == 0x08:
-            print "Lightning: %s" % as3935LastStatus
-            as3935LightningCount += 1
-            # noinspection PyUnresolvedReferences
-            as3935LastInterrupt = 0x00
-
-        # noinspection PyUnboundLocalVariable
-        print "Lightning Count = ", as3935LightningCount
-    print "----------------- "
-
-    print "----------------- "
-    if config.FRAM_Present:
-        print " FRAM Present"
-    else:
-        print " FRAM Not Present"
-    print "----------------- "
-
-    if config.FRAM_Present:
-        print "writing first 3 addresses with random data"
-        for x in range(0, 3):
-            value = random.randint(0, 255)
-            print "address = %i writing value=%i" % (x, value)
-            fram.write8(x, value)
-        print "----------------- "
-
-        print "reading first 3 addresses"
-        for x in range(0, 3):
-            print "address = %i value = %i" % (x, fram.read8(x))
-    print "----------------- "
-    print
-    print "----------------- "
-
-    if config.SunAirPlus_Present:
-        print " SunAirPlus Present"
-    else:
-        print " SunAirPlus Not Present"
-    print "----------------- "
-
-    if config.SolarPower_Mode:
-        if config.SunAirPlus_Present:
-            tca9545.write_control_register(TCA9545_CONFIG_BUS2)
-            shunt_voltage1 = 0
-            bus_voltage1 = 0
-            current_mA1 = 0
-            load_voltage1 = 0
-
-            bus_voltage1 = sunAirPlus.getBusVoltage_V(LIPO_BATTERY_CHANNEL)
-            shunt_voltage1 = sunAirPlus.getShuntVoltage_mV(LIPO_BATTERY_CHANNEL)
-            # minus is to get the "sense" right.   - means the battery is charging, + that it is discharging
-            current_mA1 = sunAirPlus.getCurrent_mA(LIPO_BATTERY_CHANNEL)
-
-            load_voltage1 = bus_voltage1 + (shunt_voltage1 / 1000)
-
-            print "LIPO_Battery Bus Voltage: %3.2f V " % bus_voltage1
-            print "LIPO_Battery Shunt Voltage: %3.2f mV " % shunt_voltage1
-            print "LIPO_Battery Load Voltage:  %3.2f V" % load_voltage1
-            print "LIPO_Battery Current 1:  %3.2f mA" % current_mA1
-            print
-
-            shunt_voltage2 = 0
-            bus_voltage2 = 0
-            current_mA2 = 0
-            load_voltage2 = 0
-
-            bus_voltage2 = sunAirPlus.getBusVoltage_V(SOLAR_CELL_CHANNEL)
-            shunt_voltage2 = sunAirPlus.getShuntVoltage_mV(SOLAR_CELL_CHANNEL)
-            current_mA2 = -sunAirPlus.getCurrent_mA(SOLAR_CELL_CHANNEL)
-            load_voltage2 = bus_voltage2 + (shunt_voltage2 / 1000)
-
-            print "Solar Cell Bus Voltage 2:  %3.2f V " % bus_voltage2
-            print "Solar Cell Shunt Voltage 2: %3.2f mV " % shunt_voltage2
-            print "Solar Cell Load Voltage 2:  %3.2f V" % load_voltage2
-            print "Solar Cell Current 2:  %3.2f mA" % current_mA2
-            print
-
-            shunt_voltage3 = 0
-            bus_voltage3 = 0
-            current_mA3 = 0
-            load_voltage3 = 0
-
-            bus_voltage3 = sunAirPlus.getBusVoltage_V(OUTPUT_CHANNEL)
-            shunt_voltage3 = sunAirPlus.getShuntVoltage_mV(OUTPUT_CHANNEL)
-            current_mA3 = sunAirPlus.getCurrent_mA(OUTPUT_CHANNEL)
-            load_voltage3 = bus_voltage3 + (shunt_voltage3 / 1000)
-
-            print "Output Bus Voltage 3:  %3.2f V " % bus_voltage3
-            print "Output Shunt Voltage 3: %3.2f mV " % shunt_voltage3
-            print "Output Load Voltage 3:  %3.2f V" % load_voltage3
-            print "Output Current 3:  %3.2f mA" % current_mA3
-            print
-            tca9545.write_control_register(TCA9545_CONFIG_BUS1)
-
-    print response
+while True:
+    print get_weather_data()
     print "Sleeping 10 seconds..."
     time.sleep(10.0)
