@@ -178,7 +178,7 @@ except IOError as e:
 
 ################
 
-def check_weather_health():
+def output_config():
     print "----------------------"
     print returnStatusLine("DS3231", config.DS3231_Present)
     print returnStatusLine("BMP280", config.BMP280_Present)
@@ -186,130 +186,104 @@ def check_weather_health():
     print returnStatusLine("ADS1015", config.ADS1015_Present)
     print returnStatusLine("ADS1115", config.ADS1115_Present)
     print returnStatusLine("AS3935", config.AS3935_Present)
+    print returnStatusLine("DS3231", config.DS3231_Present)
     print "----------------------"
+
+
+def check_weather_health():
+    output_config()
     return config.DS3231_Present and config.BMP280_Present and config.ADS1115_Present
 
 
 def get_weather_data():
-    # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
+    response = {}
 
-    ###############
-
-    # Detect AM2315
     try:
-        from tentacle_pi.AM2315 import AM2315
-
+        # Detect AM2315
         try:
-            am2315 = AM2315(0x5c, "/dev/i2c-1")
-            temperature, humidity, crc_check = am2315.sense()
-            print "AM2315 =", temperature
-            config.AM2315_Present = True
-            if crc_check == -1:
+            from tentacle_pi.AM2315 import AM2315
+
+            try:
+                am2315 = AM2315(0x5c, "/dev/i2c-1")
+                temperature, humidity, crc_check = am2315.sense()
+                print "AM2315 =", temperature
+                config.AM2315_Present = True
+                if crc_check == -1:
+                    config.AM2315_Present = False
+            except:
                 config.AM2315_Present = False
         except:
             config.AM2315_Present = False
-    except:
-        config.AM2315_Present = False
-        print "------> See Readme to install tentacle_pi"
+            print "------> See Readme to install tentacle_pi"
 
-    # Main Loop - sleeps 10 seconds
-    # Tests all I2C and WeatherRack devices on Weather Board
-    # Main Program
+        output_config()
 
-    print ""
-    print "Weather Board Demo / Test Version 1.7 - SwitchDoc Labs"
-    print ""
-    print ""
-    print "Program Started at:" + time.strftime("%Y-%m-%d %H:%M:%S")
-    print ""
+        if config.DS3231_Present:
+            print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
+            print "DS3231=\t\t%s" % ds3231.read_datetime()
 
-    totalRain = 0
+            print "DS3231 Temperature= \t%0.2f C" % ds3231.getTemp()
+            print "----------------- "
 
-    print "----------------------"
-    print returnStatusLine("DS3231", config.DS3231_Present)
-    print returnStatusLine("BMP280", config.BMP280_Present)
-    print returnStatusLine("AM2315", config.AM2315_Present)
-    print returnStatusLine("ADS1015", config.ADS1015_Present)
-    print returnStatusLine("ADS1115", config.ADS1115_Present)
-    print returnStatusLine("AS3935", config.AS3935_Present)
-    print "----------------------"
+            response['DS3231'] = {'raspberry_pi': time.strftime("%Y-%m-%d %H:%M:%S"), 'time': "%s" % ds3231.read_datetime(),
+                                  'temperature': ds3231.getTemp()}
 
-    response = {}
-
-    print "---------------------------------------- "
-    print "----------------- "
-    if config.DS3231_Present:
-        print " DS3231 Real Time Clock"
-    else:
-        print " DS3231 Real Time Clock Not Present"
-
-    print "----------------- "
-    #
-
-    if config.DS3231_Present:
-        print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
-        print "DS3231=\t\t%s" % ds3231.read_datetime()
-
-        print "DS3231 Temperature= \t%0.2f C" % ds3231.getTemp()
+        print "----------------- "
+        if config.AM2315_Present:
+            print " AM2315 Temperature/Humidity Sensor"
+        else:
+            print " AM2315 Temperature/Humidity  Sensor Not Present"
         print "----------------- "
 
-        response['DS3231'] = {'raspberry_pi': time.strftime("%Y-%m-%d %H:%M:%S"), 'time': "%s" % ds3231.read_datetime(),
-                              'temperature': ds3231.getTemp()}
-    #
-    print "----------------- "
-    if config.AM2315_Present:
-        print " AM2315 Temperature/Humidity Sensor"
-    else:
-        print " AM2315 Temperature/Humidity  Sensor Not Present"
-    print "----------------- "
+        if config.AM2315_Present:
+            # noinspection PyUnboundLocalVariable
+            temperature, humidity, crc_check = am2315.sense()
+            print "AM2315 temperature: %0.1f" % temperature
+            print "AM2315 humidity: %0.1f" % humidity
+            print "AM2315 crc: %s" % crc_check
+            response['AM2315'] = {'temperature': "%0.1f" % temperature,
+                                  'humidity': "%0.1f" % humidity,
+                                  'crc': "%s" % crc_check}
+        print "----------------- "
+        print "----------------- "
 
-    if config.AM2315_Present:
-        # noinspection PyUnboundLocalVariable
-        temperature, humidity, crc_check = am2315.sense()
-        print "AM2315 temperature: %0.1f" % temperature
-        print "AM2315 humidity: %0.1f" % humidity
-        print "AM2315 crc: %s" % crc_check
-        response['AM2315'] = {'temperature': "%0.1f" % temperature,
-                              'humidity': "%0.1f" % humidity,
-                              'crc': "%s" % crc_check}
-    print "----------------- "
-    print "----------------- "
+        currentWindSpeed = weatherStation.current_wind_speed() / 1.6
+        currentWindGust = weatherStation.get_wind_gust() / 1.6
+        totalRain += weatherStation.get_current_rain_total() / 25.4
+        print "Rain Total=\t%0.2f in" % totalRain
+        print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
+        print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
 
-    currentWindSpeed = weatherStation.current_wind_speed() / 1.6
-    currentWindGust = weatherStation.get_wind_gust() / 1.6
-    totalRain += weatherStation.get_current_rain_total() / 25.4
-    print "Rain Total=\t%0.2f in" % totalRain
-    print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
-    print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
+        if config.ADS1015_Present or config.ADS1115_Present:
+            print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
+            print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
 
-    if config.ADS1015_Present or config.ADS1115_Present:
-        print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
-        print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
+        response['weather_rack'] = {'rain_total': "%0.2f" % totalRain, 'wind_speed': "%0.2f" % currentWindSpeed,
+                                    'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
+                                    'wind_voltage': "%0.3f" % weatherStation.current_wind_direction_voltage()}
 
-    response['weather_rack'] = {'rain_total': "%0.2f" % totalRain, 'wind_speed': "%0.2f" % currentWindSpeed,
-                                'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
-                                'wind_voltage': "%0.3f" % weatherStation.current_wind_direction_voltage()}
+        print "----------------- "
+        print "----------------- "
+        if config.BMP280_Present:
+            print " BMP280 Barometer"
+        else:
+            print " BMP280 Barometer Not Present"
+        print "----------------- "
 
-    print "----------------- "
-    print "----------------- "
-    if config.BMP280_Present:
-        print " BMP280 Barometer"
-    else:
-        print " BMP280 Barometer Not Present"
-    print "----------------- "
+        if config.BMP280_Present:
+            print 'Temperature = \t{0:0.2f} C'.format(bmp280.read_temperature())
+            print 'Pressure = \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000)
+            print 'Altitude = \t{0:0.2f} m'.format(bmp280.read_altitude())
+            print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp280.read_sealevel_pressure() / 1000)
+        print "----------------- "
 
-    if config.BMP280_Present:
-        print 'Temperature = \t{0:0.2f} C'.format(bmp280.read_temperature())
-        print 'Pressure = \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000)
-        print 'Altitude = \t{0:0.2f} m'.format(bmp280.read_altitude())
-        print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp280.read_sealevel_pressure() / 1000)
-    print "----------------- "
-
-    print "----------------- "
-    response['BMP280'] = {'Temperature': '{0:0.2f}'.format(bmp280.read_temperature()),
-                          'Pressure': '{0:0.2f}'.format(bmp280.read_pressure() / 1000),
-                          'Altitude': '{0:0.2f}'.format(bmp280.read_altitude()),
-                          'SeaLevelPressure': '{0:0.2f}'.format(bmp280.read_sealevel_pressure() / 1000)}
+        print "----------------- "
+        response['BMP280'] = {'Temperature': '{0:0.2f}'.format(bmp280.read_temperature()),
+                              'Pressure': '{0:0.2f}'.format(bmp280.read_pressure() / 1000),
+                              'Altitude': '{0:0.2f}'.format(bmp280.read_altitude()),
+                              'SeaLevelPressure': '{0:0.2f}'.format(bmp280.read_sealevel_pressure() / 1000)}
+    except:
+        print 'TODO: need to fix this: ouch'
 
     return response
 
