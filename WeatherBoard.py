@@ -31,6 +31,7 @@ import config
 enable_pi_emulator = False
 
 try:
+    # noinspection PyUnresolvedReferences
     import RPi.GPIO as GPIO
     # noinspection PyUnresolvedReferences
     import smbus
