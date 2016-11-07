@@ -16,6 +16,7 @@ import sys
 import time
 from datetime import datetime
 import random
+import traceback
 
 # =========================================================================
 #  Application imports
@@ -286,7 +287,8 @@ def get_weather_data():
                               'Altitude': '{0:0.2f}'.format(bmp280.read_altitude()),
                               'SeaLevelPressure': '{0:0.2f}'.format(bmp280.read_sealevel_pressure() / 1000)}
     except Exception as e:
-        print "Main Thread Error({0}): {1}".format(e.errno, e.strerror)
+        traceback.print_exc()
+        print e.message
 
     return response
 
