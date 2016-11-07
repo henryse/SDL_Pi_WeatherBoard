@@ -24,8 +24,6 @@ try:
 except ImportError:
     enable_pi_emulator = True
 
-sys.path.append('./SDL_Pi_INA3221')
-sys.path.append('./RTC_SDL_DS3231')
 sys.path.append('./Adafruit_Python_BMP')
 sys.path.append('./Adafruit_Python_GPIO')
 sys.path.append('./SDL_Pi_WeatherRack')
