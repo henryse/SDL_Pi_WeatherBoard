@@ -33,7 +33,8 @@ def get_weather():
                 'CurrentWindSpeed': data.get('weather_rack', None).get('wind_speed', None),
                 'CurrentWindGust': data.get('weather_rack', None).get('wind_gust', None),
                 'CurrentWindDirection':data.get('ADS1015', None).get('wind_direction', None),
-                'RainTotal': data.get('weather_rack', None).get('rain_total', None)}
+                'RainTotal': data.get('weather_rack', None).get('rain_total', None),
+                'IndoorTemperature': data.get('DS3231', None).get('temperature', None)}
     return json.dumps(response, ensure_ascii=False)
 
 
