@@ -16,8 +16,6 @@ import sys
 import time
 from datetime import datetime
 import random
-import binascii
-import struct
 
 # =========================================================================
 #  Application imports
@@ -51,10 +49,6 @@ sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
 import SDL_DS3231
 import Adafruit_BMP.BMP280 as BMP280
 import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
-import SDL_Pi_FRAM
-from RPi_AS3935 import RPi_AS3935
-import SDL_Pi_INA3221
-import SDL_Pi_TCA9545
 
 # /*=========================================================================
 #    I2C ADDRESS/BITS
@@ -184,6 +178,10 @@ except IOError as e:
 
 ################
 
+def check_weather_health():
+    return config.DS3231_Present and config.BMP280_Present and config.AM2315_Present and config.ADS1115_Present
+
+
 def get_weather_data():
     # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
 
@@ -205,15 +203,6 @@ def get_weather_data():
     except:
         config.AM2315_Present = False
         print "------> See Readme to install tentacle_pi"
-
-    ###########
-    # WXLink functions
-
-    def hex2float(s):
-        return struct.unpack('<f', binascii.unhexlify(s))[0]
-
-    def hex2int(s):
-        return struct.unpack('<L', binascii.unhexlify(s))[0]
 
     # Main Loop - sleeps 10 seconds
     # Tests all I2C and WeatherRack devices on Weather Board
@@ -237,9 +226,6 @@ def get_weather_data():
     print returnStatusLine("AS3935", config.AS3935_Present)
     print "----------------------"
 
-    block1 = ""
-    block2 = ""
-
     response = {}
 
     print "---------------------------------------- "
@@ -253,10 +239,6 @@ def get_weather_data():
     #
 
     if config.DS3231_Present:
-        current_time = datetime.utcnow()
-
-        delta_time = current_time - start_time
-
         print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
         print "DS3231=\t\t%s" % ds3231.read_datetime()
 
@@ -290,8 +272,6 @@ def get_weather_data():
     totalRain += weatherStation.get_current_rain_total() / 25.4
     print "Rain Total=\t%0.2f in" % totalRain
     print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
-    # noinspection PyUnresolvedReferences
-
     print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
 
     if config.ADS1015_Present or config.ADS1115_Present:
@@ -315,7 +295,6 @@ def get_weather_data():
         print 'Pressure = \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000)
         print 'Altitude = \t{0:0.2f} m'.format(bmp280.read_altitude())
         print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp280.read_sealevel_pressure() / 1000)
-        # noinspection PyUnresolvedReferences
     print "----------------- "
 
     print "----------------- "

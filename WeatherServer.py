@@ -1,5 +1,7 @@
 from flask import json
 from flask import Flask
+from WeatherBoard import get_weather_data
+from WeatherBoard import check_weather_health
 
 app = Flask(__name__)
 
@@ -13,7 +15,8 @@ def get_is_active():
 def get_health():
     response = {'status': 'DOWN'}
 
-    # if airport_database.validate_airport_database():
-    #    response = {'status': 'UP'}
+    if check_weather_health():
+        response = {'status': 'UP'}
+
     return json.dumps(response, ensure_ascii=False)
 
