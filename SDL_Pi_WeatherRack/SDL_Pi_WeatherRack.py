@@ -20,6 +20,7 @@ except:
 
 import sys
 import time as time_
+import traceback
 
 sys.path.append('./Adafruit_ADS1x15')
 
@@ -61,7 +62,7 @@ def voltageToDegrees(value, defaultWindDirection):
     # Typically only recieve 8 positions.  And 315 degrees was wrong.
 
     # For 5V, use 1.0.  For 3.3V use 0.66
-    ADJUST3OR5 = 1.0
+    ADJUST3OR5 = 0.66
 
     if fuzzyCompare(3.84 * ADJUST3OR5, value):
         return 0.0
@@ -186,7 +187,7 @@ class SDL_Pi_WeatherRack:
                 config.ADS1115_Present = False
                 # check again (1 out 16 chance of zero)
                 value = self.ads1015.readRaw(0, self.gain, self.sps)  # AIN1 wired to wind vane on WeatherPiArduino
-                if ((0x0F & value) == 0):
+                if (0x0F & value) == 0:
                     config.ADS1015_Present = True
                     config.ADS1115_Present = False
 
@@ -201,8 +202,9 @@ class SDL_Pi_WeatherRack:
                 if not enable_pi_emulator:
                     self.ads1015 = ADS1x15(ic=ADS1115, address=0x48)
 
-        except TypeError as err:
-            print err.message
+        except TypeError as e:
+            traceback.print_exc()
+            print e.message
             config.ADS1015_Present = False
             config.ADS1115_Present = False
 
