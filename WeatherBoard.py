@@ -172,9 +172,6 @@ def output_config():
     print "----------------------"
 
 
-output_config()
-
-
 def check_weather_health():
     output_config()
     return config.DS3231_Present and config.BMP280_Present and config.ADS1115_Present
