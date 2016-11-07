@@ -162,7 +162,7 @@ try:
     print "----------------- "
 
 except IOError as e:
-    #    print "I/O error({0}): {1}".format(e.errno, e.strerror)
+    print "I/O error({0}): {1}".format(e.errno, e.strerror)
     config.DS3231_Present = False
 # do the AT24C32 eeprom
 
@@ -175,8 +175,7 @@ try:
     config.BMP280_Present = True
 
 except IOError as e:
-
-    #    print "I/O error({0}): {1}".format(e.errno, e.strerror)
+    print "I/O error({0}): {1}".format(e.errno, e.strerror)
     config.BMP280_Present = False
 
 
@@ -253,7 +252,7 @@ def get_weather_data():
 
         currentWindSpeed = weatherStation.current_wind_speed() / 1.6
         currentWindGust = weatherStation.get_wind_gust() / 1.6
-        totalRain = weatherStation.get_current_rain_total() / 25.4
+        totalRain += weatherStation.get_current_rain_total() / 25.4
         print "Rain Total=\t%0.2f in" % totalRain
         print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
         print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
@@ -286,8 +285,8 @@ def get_weather_data():
                               'Pressure': '{0:0.2f}'.format(bmp280.read_pressure() / 1000),
                               'Altitude': '{0:0.2f}'.format(bmp280.read_altitude()),
                               'SeaLevelPressure': '{0:0.2f}'.format(bmp280.read_sealevel_pressure() / 1000)}
-    except:
-        print 'TODO: need to fix this: ouch'
+    except Exception as e:
+        print "Main Thread Error({0}): {1}".format(e.errno, e.strerror)
 
     return response
 
