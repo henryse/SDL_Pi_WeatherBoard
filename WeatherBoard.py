@@ -488,6 +488,8 @@ while True:
         currentWindDirection = struct.unpack('H', str(block1[7:9]))[0]
         print "Wind Direction=\t\t\t %i Degrees" % currentWindDirection
 
+        response['windinfo'] = {'RainTotal': "%0.2f" % totalRain, 'WindSpeed': "%0.2f" % currentWindSpeed,
+                                'WindDirection': "%i" % currentWindDirection}
         # now do the AM2315 Temperature
         temperature = struct.unpack('f', str(block1[25:29]))[0]
         elements = [block1[29], block1[30], block1[31], block2[0]]
@@ -534,6 +536,11 @@ while True:
     print "----------------- "
 
     print "----------------- "
+    response['BMP280'] = {'Temperature': '{0:0.2f}'.format(bmp280.read_temperature()),
+                          'Pressure': '{0:0.2f}'.format(bmp280.read_pressure() / 1000),
+                          'Altitude': '{0:0.2f}'.format(bmp280.read_altitude()),
+                          'SeaLevelPressure': '{0:0.2f}'.format(bmp280.read_sealevel_pressure() / 1000)}
+
     if (config.HTU21DF_Present == True):
         print " HTU21DF Temp/Hum"
     else:
