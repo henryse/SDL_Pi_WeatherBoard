@@ -236,9 +236,9 @@ def get_weather_data():
                                   'humidity': "%0.1f" % humidity,
                                   'crc': "%s" % crc_check}
 
-        currentWindSpeed = weatherStation.current_wind_speed() / 1.6
-        currentWindGust = weatherStation.get_wind_gust() / 1.6
-        totalRain = weatherStation.get_current_rain_total() / 25.4
+        currentWindSpeed = weatherStation.current_wind_speed()
+        currentWindGust = weatherStation.get_wind_gust()
+        totalRain = weatherStation.get_current_rain_total()
 
         if config.ADS1015_Present or config.ADS1115_Present:
             response['ADS1015'] = {'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
