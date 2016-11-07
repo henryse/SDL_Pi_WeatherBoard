@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import time, signal, sys
+import signal, sys
 from Adafruit_ADS1x15 import ADS1x15
 
 

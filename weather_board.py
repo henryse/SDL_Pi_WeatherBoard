@@ -9,7 +9,6 @@ import random
 import traceback
 import config
 
-
 # =========================================================================
 #  Raspberry PI imports
 # =========================================================================
@@ -136,7 +135,6 @@ try:
     ds3231.write_now()
     print "DS3231=\t\t%s" % ds3231.read_datetime()
     config.DS3231_Present = True
-    print "----------------- "
     print "----------------- "
     print " AT24C32 EEPROM"
     print "----------------- "
