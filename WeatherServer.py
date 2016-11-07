@@ -1,6 +1,5 @@
 from flask import json
 from flask import Flask
-from WeatherBoard import get_weather_data
 from WeatherBoard import check_weather_health
 
 app = Flask(__name__)
@@ -20,3 +19,6 @@ def get_health():
 
     return json.dumps(response, ensure_ascii=False)
 
+
+if __name__ == '__main__':
+    app.run()
