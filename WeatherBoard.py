@@ -452,9 +452,14 @@ while True:
         # noinspection PyUnresolvedReferences
 
         print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
+
         if config.ADS1015_Present or config.ADS1115_Present:
             print "Wind Direction=\t\t\t %0.2f Degrees" % weatherStation.current_wind_direction()
             print "Wind Direction Voltage=\t\t %0.3f V" % weatherStation.current_wind_direction_voltage()
+
+        response['weather_rack'] = {'rain_total': "%0.2f" % totalRain, 'wind_speed': "%0.2f" % currentWindSpeed,
+                                    'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
+                                    'wind_voltage': "%0.3f" % weatherStation.current_wind_direction_voltage()}
 
     if config.WXLink_Present:
         old_block1 = block1
@@ -488,8 +493,6 @@ while True:
         currentWindDirection = struct.unpack('H', str(block1[7:9]))[0]
         print "Wind Direction=\t\t\t %i Degrees" % currentWindDirection
 
-        response['windinfo'] = {'RainTotal': "%0.2f" % totalRain, 'WindSpeed': "%0.2f" % currentWindSpeed,
-                                'WindDirection': "%i" % currentWindDirection}
         # now do the AM2315 Temperature
         temperature = struct.unpack('f', str(block1[25:29]))[0]
         elements = [block1[29], block1[30], block1[31], block2[0]]
@@ -541,7 +544,7 @@ while True:
                           'Altitude': '{0:0.2f}'.format(bmp280.read_altitude()),
                           'SeaLevelPressure': '{0:0.2f}'.format(bmp280.read_sealevel_pressure() / 1000)}
 
-    if (config.HTU21DF_Present == True):
+    if config.HTU21DF_Present:
         print " HTU21DF Temp/Hum"
     else:
         print " HTU21DF Temp/Hum Not Present"
