@@ -187,7 +187,7 @@ def check_weather_health():
     print returnStatusLine("ADS1115", config.ADS1115_Present)
     print returnStatusLine("AS3935", config.AS3935_Present)
     print "----------------------"
-    return config.DS3231_Present and config.BMP280_Present and config.AM2315_Present and config.ADS1115_Present
+    return config.DS3231_Present and config.BMP280_Present and config.ADS1115_Present
 
 
 def get_weather_data():
