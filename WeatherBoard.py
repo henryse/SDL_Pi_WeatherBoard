@@ -1,13 +1,3 @@
-#!/usr/bin/env python
-#
-# Weather Board Test File
-# Version 1.8 August 22, 2016
-#
-# SwitchDoc Labs
-# www.switchdoc.com
-#
-#
-
 # =========================================================================
 #  System Imports....
 # =========================================================================
@@ -17,12 +7,8 @@ import time
 from datetime import datetime
 import random
 import traceback
-
-# =========================================================================
-#  Application imports
-# =========================================================================
-
 import config
+
 
 # =========================================================================
 #  Raspberry PI imports
@@ -45,9 +31,7 @@ sys.path.append('./Adafruit_Python_BMP')
 sys.path.append('./Adafruit_Python_GPIO')
 sys.path.append('./Adafruit_Python_SSD1306')
 sys.path.append('./SDL_Pi_WeatherRack')
-sys.path.append('./SDL_Pi_FRAM')
 sys.path.append('./SDL_Pi_TCA9545')
-sys.path.append('./RaspberryPi-AS3935/RPi_AS3935')
 
 # noinspection PyUnresolvedReferences
 import SDL_DS3231
@@ -87,8 +71,6 @@ as3935_Interrupt_Happened = False
 # set to true if you are building the solar powered version
 config.SolarPower_Mode = False
 
-config.SunAirPlus_Present = False
-config.AS3935_Present = False
 config.DS3231_Present = False
 config.BMP280_Present = False
 config.AM2315_Present = False
@@ -142,7 +124,6 @@ start_time = datetime.utcnow()
 ds3231 = SDL_DS3231.SDL_DS3231(1, 0x68)
 
 try:
-
     # comment out the next line after the clock has been initialized
     ds3231.write_now()
     print "DS3231=\t\t%s" % ds3231.read_datetime()
@@ -166,7 +147,6 @@ try:
 except IOError as e:
     print "I/O error({0}): {1}".format(e.errno, e.strerror)
     config.DS3231_Present = False
-# do the AT24C32 eeprom
 
 ################
 
@@ -190,7 +170,6 @@ def output_config():
     print returnStatusLine("AM2315", config.AM2315_Present)
     print returnStatusLine("ADS1015", config.ADS1015_Present)
     print returnStatusLine("ADS1115", config.ADS1115_Present)
-    print returnStatusLine("AS3935", config.AS3935_Present)
     print returnStatusLine("DS3231", config.DS3231_Present)
     print "----------------------"
 
