@@ -18,14 +18,12 @@ from datetime import datetime
 import random
 import binascii
 import struct
-import subprocess
 
 # =========================================================================
 #  Application imports
 # =========================================================================
 
 import config
-import logging
 
 # =========================================================================
 #  Raspberry PI imports
@@ -94,7 +92,6 @@ config.AS3935_Present = False
 config.DS3231_Present = False
 config.BMP280_Present = False
 config.FRAM_Present = False
-config.HTU21DF_Present = False
 config.AM2315_Present = False
 config.ADS1015_Present = False
 config.ADS1115_Present = False
@@ -199,40 +196,8 @@ except IOError as e:
     #    print "I/O error({0}): {1}".format(e.errno, e.strerror)
     config.BMP280_Present = False
 
-################
-
-# HTU21DF Detection
-try:
-    HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
-    config.HTU21DF_Present = True
-except:
-    config.HTU21DF_Present = False
-
 
 ################
-
-def respond_to_as3935_interrupt():
-    # switch to BUS1 - lightning detector is on Bus1
-    print "in respond to as3935 interrupt"
-    tca9545.write_control_register(TCA9545_CONFIG_BUS1)
-    time.sleep(0.003)
-    global as3935, as3935LastInterrupt, as3935LastDistance, as3935LastStatus
-    reason = as3935.get_interrupt()
-    as3935LastInterrupt = reason
-    if reason == 0x01:
-        as3935LastStatus = "Noise Floor too low. Adjusting"
-        as3935.raise_noise_floor()
-    elif reason == 0x04:
-        as3935LastStatus = "Disturber detected - masking"
-        as3935.set_mask_disturber(True)
-    elif reason == 0x08:
-        now = datetime.now().strftime('%H:%M:%S - %Y/%m/%d')
-        distance = as3935.get_distance()
-        as3935LastDistance = distance
-        as3935LastStatus = "Lightning Detected " + str(distance) + "km away. (%s)" % now
-    # switch back to BUS0
-    tca9545.write_control_register(TCA9545_CONFIG_BUS0)
-
 
 def get_weather_data():
     # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
@@ -252,7 +217,7 @@ def get_weather_data():
     ###############
 
     if config.SolarPower_Mode:
-
+        print "ARE WE HERE!!!!!"
         try:
             # switch to BUS2 -  SunAirPlus is on Bus2
             tca9545.write_control_register(TCA9545_CONFIG_BUS2)
@@ -314,7 +279,6 @@ def get_weather_data():
     print returnStatusLine("DS3231", config.DS3231_Present)
     print returnStatusLine("BMP280", config.BMP280_Present)
     print returnStatusLine("FRAM", config.FRAM_Present)
-    print returnStatusLine("HTU21DF", config.HTU21DF_Present)
     print returnStatusLine("AM2315", config.AM2315_Present)
     print returnStatusLine("ADS1015", config.ADS1015_Present)
     print returnStatusLine("ADS1115", config.ADS1115_Present)
@@ -482,28 +446,11 @@ def get_weather_data():
                           'Altitude': '{0:0.2f}'.format(bmp280.read_altitude()),
                           'SeaLevelPressure': '{0:0.2f}'.format(bmp280.read_sealevel_pressure() / 1000)}
 
-    if config.HTU21DF_Present:
-        print " HTU21DF Temp/Hum"
-    else:
-        print " HTU21DF Temp/Hum Not Present"
-    print "----------------- "
-
-    # We use a C library for this device as it just doesn't play well with Python and smbus/I2C libraries
-    if config.HTU21DF_Present:
-        HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
-        split_string = HTU21DFOut.split()
-
-        htu_temperature = float(split_string[0])
-        htu_humidity = float(split_string[1])
-        print "Temperature XXXX = \t%0.2f C" % htu_temperature
-        print "Humidity = \t%0.2f %%" % htu_humidity
-        # noinspection PyUnresolvedReferences
-    print "----------------- "
-
     return response
 
 
-while True:
-    print get_weather_data()
-    print "Sleeping 10 seconds..."
-    time.sleep(10.0)
+if __name__ == '__main__':
+    while True:
+        print get_weather_data()
+        print "Sleeping 10 seconds..."
+        time.sleep(10.0)
