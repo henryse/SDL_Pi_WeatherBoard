@@ -25,13 +25,19 @@ import subprocess
 # =========================================================================
 
 import config
+import logging
 
 # =========================================================================
 #  Raspberry PI imports
 # =========================================================================
 
-import RPi.GPIO as GPIO
-import smbus
+enable_pi_emulator = False
+
+try:
+    import RPi.GPIO as GPIO
+    import smbus
+except ImportError:
+    enable_pi_emulator = True
 
 sys.path.append('./SDL_Pi_SSD1306')
 sys.path.append('./SDL_Pi_INA3221')
@@ -51,8 +57,6 @@ import SDL_Pi_FRAM
 from RPi_AS3935 import RPi_AS3935
 import SDL_Pi_INA3221
 import SDL_Pi_TCA9545
-import Adafruit_SSD1306
-import Scroll_SSD1306
 
 # /*=========================================================================
 #    I2C ADDRESS/BITS
@@ -96,7 +100,6 @@ config.HTU21DF_Present = False
 config.AM2315_Present = False
 config.ADS1015_Present = False
 config.ADS1115_Present = False
-config.OLED_Present = False
 config.WXLink_Present = False
 
 ###############
@@ -204,27 +207,12 @@ except IOError as e:
 
 ################
 
-# HTU21DF Detection 
+# HTU21DF Detection
 try:
     HTU21DFOut = subprocess.check_output(["htu21dflib/htu21dflib", "-l"])
     config.HTU21DF_Present = True
 except:
     config.HTU21DF_Present = False
-
-################
-
-# OLED SSD_1306 Detection
-
-try:
-    RST = 27
-    display = Adafruit_SSD1306.SSD1306_128_64(rst=RST, i2c_address=0x3C)
-    # Initialize library.
-    display.begin()
-    display.clear()
-    display.display()
-    config.OLED_Present = True
-except:
-    config.OLED_Present = False
 
 ################
 
@@ -283,13 +271,11 @@ def respond_to_as3935_interrupt():
         distance = as3935.get_distance()
         as3935LastDistance = distance
         as3935LastStatus = "Lightning Detected " + str(distance) + "km away. (%s)" % now
-    # switch back to BUS0 
+    # switch back to BUS0
     tca9545.write_control_register(TCA9545_CONFIG_BUS0)
 
 
 # GPIO.add_event_detect(as3935pin, GPIO.RISING, callback=handle_as3935_interrupt)
-
-
 
 if config.Lightning_Mode:
     as3935pin = 13
@@ -301,10 +287,10 @@ if config.Lightning_Mode:
 
 ###############
 
-# Set up FRAM 
+# Set up FRAM
 
 fram = SDL_Pi_FRAM.SDL_Pi_FRAM(addr=0x50)
-# FRAM Detection 
+# FRAM Detection
 try:
     fram.read8(0)
     config.FRAM_Present = True
@@ -336,7 +322,7 @@ if config.SolarPower_Mode:
 
 ###############
 
-# Detect AM2315 
+# Detect AM2315
 try:
     from tentacle_pi.AM2315 import AM2315
 
@@ -366,13 +352,13 @@ def hex2int(s):
 
 
 # Main Loop - sleeps 10 seconds
-# Tests all I2C and WeatherRack devices on Weather Board 
+# Tests all I2C and WeatherRack devices on Weather Board
 
 
 # Main Program
 
 print ""
-print "Weather Board Demo / Test Version 1.6 - SwitchDoc Labs"
+print "Weather Board Demo / Test Version 1.7 - SwitchDoc Labs"
 print ""
 print ""
 print "Program Started at:" + time.strftime("%Y-%m-%d %H:%M:%S")
@@ -390,7 +376,6 @@ print returnStatusLine("ADS1015", config.ADS1015_Present)
 print returnStatusLine("ADS1115", config.ADS1115_Present)
 print returnStatusLine("AS3935", config.AS3935_Present)
 # noinspection PyUnresolvedReferences
-print returnStatusLine("OLED", config.OLED_Present)
 print returnStatusLine("SunAirPlus", config.SunAirPlus_Present)
 print returnStatusLine("WXLink", config.WXLink_Present)
 print "----------------------"
@@ -399,6 +384,7 @@ block1 = ""
 block2 = ""
 
 while True:
+    response = {}
 
     if config.Lightning_Mode:
         # switch to BUS0
@@ -421,15 +407,13 @@ while True:
         delta_time = current_time - start_time
 
         print "Raspberry Pi=\t" + time.strftime("%Y-%m-%d %H:%M:%S")
-
-        # noinspection PyUnresolvedReferences
-        if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, "%s" % ds3231.read_datetime())
-
         print "DS3231=\t\t%s" % ds3231.read_datetime()
 
         print "DS3231 Temperature= \t%0.2f C" % ds3231.getTemp()
         print "----------------- "
+
+        response['DS3231'] = {'raspberry_pi': time.strftime("%Y-%m-%d %H:%M:%S"), 'time': ds3231.read_datetime(),
+                              'temperature': ds3231.getTemp()}
 
     print "----------------- "
     print " WeatherRack Weather Sensors"
@@ -463,15 +447,6 @@ while True:
         print "Rain Total=\t%0.2f in" % (totalRain)
         print 'Wind Speed=\t%0.2f MPH' % (currentWindSpeed)
         # noinspection PyUnresolvedReferences
-        if config.OLED_Present:
-            # noinspection PyUnresolvedReferences
-            if config.OLED_Present:
-                Scroll_SSD1306.addLineOLED(display, "Wind Speed=\t%0.2f MPH" % currentWindSpeed)
-                Scroll_SSD1306.addLineOLED(display, "Rain Total=\t%0.2f in" % totalRain)
-        if config.ADS1015_Present or config.ADS1115_Present:
-            # noinspection PyUnresolvedReferences
-            if config.OLED_Present:
-                Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
 
         print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
         if config.ADS1015_Present or config.ADS1115_Present:
@@ -506,10 +481,6 @@ while True:
         print "Rain Total=\t%0.2f in" % totalRain
         print "Wind Speed=\t%0.2f MPH" % currentWindSpeed
         # noinspection PyUnresolvedReferences
-        if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, "Wind Speed=\t%0.2f MPH" % currentWindSpeed)
-            Scroll_SSD1306.addLineOLED(display, "Rain Total=\t%0.2f in" % totalRain)
-            Scroll_SSD1306.addLineOLED(display, "Wind Dir=%0.2f Degrees" % weatherStation.current_wind_direction())
 
         currentWindDirection = struct.unpack('H', str(block1[7:9]))[0]
         print "Wind Direction=\t\t\t %i Degrees" % currentWindDirection
@@ -557,10 +528,6 @@ while True:
         print 'Altitude = \t{0:0.2f} m'.format(bmp280.read_altitude())
         print 'Sealevel Pressure = \t{0:0.2f} KPa'.format(bmp280.read_sealevel_pressure() / 1000)
         # noinspection PyUnresolvedReferences
-        if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, 'Press= \t{0:0.2f} KPa'.format(bmp280.read_pressure() / 1000))
-            if not config.HTU21DF_Present:
-                Scroll_SSD1306.addLineOLED(display, 'InTemp= \t{0:0.2f} C'.format(bmp280.read_temperature()))
     print "----------------- "
 
     print "----------------- "
@@ -580,8 +547,6 @@ while True:
         print "Temperature = \t%0.2f C" % htu_temperature
         print "Humidity = \t%0.2f %%" % htu_humidity
         # noinspection PyUnresolvedReferences
-        if config.OLED_Present:
-            Scroll_SSD1306.addLineOLED(display, "InTemp = \t%0.2f C" % htu_temperature)
     print "----------------- "
 
     print "----------------- "
@@ -613,10 +578,6 @@ while True:
             print "Lightning: %s" % as3935LastStatus
             as3935LightningCount += 1
             # noinspection PyUnresolvedReferences
-            if config.OLED_Present:
-                Scroll_SSD1306.addLineOLED(display, '')
-                Scroll_SSD1306.addLineOLED(display, '---LIGHTNING---')
-                Scroll_SSD1306.addLineOLED(display, '')
             as3935LastInterrupt = 0x00
 
         # noinspection PyUnboundLocalVariable
@@ -705,5 +666,6 @@ while True:
             print
             tca9545.write_control_register(TCA9545_CONFIG_BUS1)
 
-    print "Sleeping 10 seconds dude"
+    print response
+    print "Sleeping 10 seconds..."
     time.sleep(10.0)
