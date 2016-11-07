@@ -436,6 +436,9 @@ while True:
         print "AM2315 temperature: %0.1f" % temperature
         print "AM2315 humidity: %0.1f" % humidity
         print "AM2315 crc: %s" % crc_check
+        response['AM2315'] = {'temperature': "%0.1f" % temperature,
+                              'humidity': "%0.1f" % humidity,
+                              'crc': "%s" % crc_check}
     print "----------------- "
     print "----------------- "
 
@@ -444,8 +447,8 @@ while True:
         currentWindSpeed = weatherStation.current_wind_speed() / 1.6
         currentWindGust = weatherStation.get_wind_gust() / 1.6
         totalRain += weatherStation.get_current_rain_total() / 25.4
-        print "Rain Total=\t%0.2f in" % (totalRain)
-        print 'Wind Speed=\t%0.2f MPH' % (currentWindSpeed)
+        print "Rain Total=\t%0.2f in" % totalRain
+        print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
         # noinspection PyUnresolvedReferences
 
         print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
