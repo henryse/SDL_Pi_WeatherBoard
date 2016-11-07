@@ -36,35 +36,35 @@ import Adafruit_BMP.BMP280 as BMP280
 # noinspection PyUnresolvedReferences
 import SDL_Pi_WeatherRack as SDL_Pi_WeatherRack
 
-# /*=========================================================================
+# =========================================================================
 #    I2C ADDRESS/BITS
-#    -----------------------------------------------------------------------*/
+# =========================================================================
 TCA9545_ADDRESS = 0x73  # 1110011 (A0+A1=VDD)
-# /*=========================================================================*/
+# =========================================================================
 
-# /*=========================================================================
+# =========================================================================
 #    CONFIG REGISTER (R/W)
-#    -----------------------------------------------------------------------*/
+# =========================================================================
 TCA9545_REG_CONFIG = 0x00
-#    /*---------------------------------------------------------------------*/
-
 TCA9545_CONFIG_BUS0 = 0x01  # 1 = enable, 0 = disable
 TCA9545_CONFIG_BUS1 = 0x02  # 1 = enable, 0 = disable
 TCA9545_CONFIG_BUS2 = 0x04  # 1 = enable, 0 = disable
 TCA9545_CONFIG_BUS3 = 0x08  # 1 = enable, 0 = disable
 
-# /*=========================================================================*/
+# =========================================================================
 
 
-################
+# =========================================================================
 # Device Present State Variables
-###############
-
 # indicate interrupt has happened from as3936
+# =========================================================================
 
 as3935_Interrupt_Happened = False
 
+# =========================================================================
 # set to true if you are building the solar powered version
+# =========================================================================
+
 config.SolarPower_Mode = False
 
 config.DS3231_Present = False
@@ -74,9 +74,9 @@ config.ADS1015_Present = False
 config.ADS1115_Present = False
 
 
-###############
+# =========================================================================
 # setup lightning i2c mux
-##############
+# =========================================================================
 
 def returnStatusLine(device, state):
     return_string = device
@@ -88,24 +88,30 @@ def returnStatusLine(device, state):
     return return_string
 
 
-###############
-
+# =========================================================================
 # WeatherRack Weather Sensors
 #
 # GPIO Numbering Mode GPIO.BCM
-#
+# =========================================================================
 
 anemometerPin = 21
 rainPin = 20
 
-# constants
+# =========================================================================
+# internally, the library checks for ADS1115 or ADS1015 if found
+# =========================================================================
 
 SDL_MODE_INTERNAL_AD = 0
-SDL_MODE_I2C_ADS1015 = 1  # internally, the library checks for ADS1115 or ADS1015 if found
+SDL_MODE_I2C_ADS1015 = 1
 
+# =========================================================================
 # sample mode means return immediately.  THe wind speed is averaged at sampleTime or when you ask, whichever is longer
+# =========================================================================
 SDL_MODE_SAMPLE = 0
+
+# =========================================================================
 # Delay mode means to wait for sampleTime and the average after that time.
+# =========================================================================
 SDL_MODE_DELAY = 1
 
 weatherStation = SDL_Pi_WeatherRack.SDL_Pi_WeatherRack(anemometerPin, rainPin, SDL_MODE_I2C_ADS1015)
@@ -113,14 +119,18 @@ weatherStation = SDL_Pi_WeatherRack.SDL_Pi_WeatherRack(anemometerPin, rainPin, S
 weatherStation.setWindMode(SDL_MODE_SAMPLE, 5.0)
 # weatherStation.setWindMode(SDL_MODE_DELAY, 5.0)
 
+# =========================================================================
 # DS3231/AT24C32 Setup
+# =========================================================================
 filename = time.strftime("%Y-%m-%d%H:%M:%SRTCTest") + ".txt"
 start_time = datetime.utcnow()
 
 ds3231 = SDL_DS3231.SDL_DS3231(1, 0x68)
 
 try:
+    # =========================================================================
     # comment out the next line after the clock has been initialized
+    # =========================================================================
     ds3231.write_now()
     print "DS3231=\t\t%s" % ds3231.read_datetime()
     config.DS3231_Present = True
@@ -144,9 +154,9 @@ except IOError as e:
     print "I/O error({0}): {1}".format(e.errno, e.strerror)
     config.DS3231_Present = False
 
-################
-
+# =========================================================================
 # BMP280 Setup
+# =========================================================================
 
 try:
     bmp280 = BMP280.BMP280()
@@ -156,8 +166,6 @@ except IOError as e:
     print "I/O error({0}): {1}".format(e.errno, e.strerror)
     config.BMP280_Present = False
 
-
-################
 
 def output_config():
     print "----------------------"
@@ -179,7 +187,9 @@ def get_weather_data():
     response = {}
 
     try:
+        # =========================================================================
         # Detect AM2315
+        # =========================================================================
         try:
             # noinspection PyUnresolvedReferences,PyPackageRequirements
             from tentacle_pi.AM2315 import AM2315

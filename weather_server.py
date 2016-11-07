@@ -1,7 +1,7 @@
 from flask import json
 from flask import Flask
-from WeatherBoard import check_weather_health
-from WeatherBoard import get_weather_data
+from weather_board import check_weather_health
+from weather_board import get_weather_data
 
 app = Flask(__name__)
 
