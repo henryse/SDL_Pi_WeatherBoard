@@ -253,7 +253,7 @@ def get_weather_data():
 
         currentWindSpeed = weatherStation.current_wind_speed() / 1.6
         currentWindGust = weatherStation.get_wind_gust() / 1.6
-        totalRain += weatherStation.get_current_rain_total() / 25.4
+        totalRain = weatherStation.get_current_rain_total() / 25.4
         print "Rain Total=\t%0.2f in" % totalRain
         print 'Wind Speed=\t%0.2f MPH' % currentWindSpeed
         print "MPH wind_gust=\t%0.2f MPH" % currentWindGust
