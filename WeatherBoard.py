@@ -705,5 +705,5 @@ while True:
             print
             tca9545.write_control_register(TCA9545_CONFIG_BUS1)
 
-    print "Sleeping 10 seconds"
+    print "Sleeping 10 seconds dude"
     time.sleep(10.0)
