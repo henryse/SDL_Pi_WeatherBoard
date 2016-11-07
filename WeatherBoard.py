@@ -194,6 +194,9 @@ def output_config():
     print "----------------------"
 
 
+output_config()
+
+
 def check_weather_health():
     output_config()
     return config.DS3231_Present and config.BMP280_Present and config.ADS1115_Present
@@ -237,8 +240,8 @@ def get_weather_data():
         totalRain = weatherStation.get_current_rain_total() / 25.4
 
         if config.ADS1015_Present or config.ADS1115_Present:
-            response['ADS1015'] = { 'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
-                                    'wind_voltage': "%0.3f" % weatherStation.current_wind_direction_voltage()}
+            response['ADS1015'] = {'wind_direction': "%0.2f" % weatherStation.current_wind_direction(),
+                                   'wind_voltage': "%0.3f" % weatherStation.current_wind_direction_voltage()}
 
         response['weather_rack'] = {'rain_total': "%0.2f" % totalRain,
                                     'wind_speed': "%0.2f" % currentWindSpeed,
